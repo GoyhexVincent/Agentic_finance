@@ -19,7 +19,18 @@
 --    7. droits de lecture Grafana
 -- ═══════════════════════════════════════════════════════════════════════════
 
-CREATE SCHEMA IF NOT EXISTS finance;
+-- Ne pas utiliser « CREATE SCHEMA IF NOT EXISTS » ici : PostgreSQL exige
+-- le droit CREATE sur la BASE même lorsque le schéma existe déjà. Le rôle
+-- finance possède le schéma, pas la base. On saute donc la création si le
+-- schéma existe, ce qui permet à l'ETL de rejouer ce fichier sans privilège
+-- supplémentaire.
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'finance') THEN
+        EXECUTE 'CREATE SCHEMA finance AUTHORIZATION finance';
+    END IF;
+END $$;
+
 SET search_path TO finance, public;
 
 -- ───────────────────────────────────────────────────────────────────────────
