@@ -1,0 +1,7 @@
+# Optionnel : détection de ruptures par PELT/Binseg via ruptures.
+# Sans ce paquet, finance_tracker.analytics utilise une segmentation binaire
+# interne (aucune dépendance, résultat déterministe).
+#
+# Sur Raspberry Pi, l'installation de numpy/scipy peut prendre plusieurs
+# minutes. Le pipeline principal fonctionne sans.
+ruptures>=1.1.9

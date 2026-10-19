@@ -1,9 +1,10 @@
 # Finance Tracker — plan d'architecture et de mise en œuvre
 
-> **Statut : proposition à valider.**
-> Le dépôt est initialisé, mais aucun code métier, aucune table et aucun job
-> Jenkins n'ont encore été créés. Ce document sert de support à la validation
-> du périmètre et des choix structurants.
+> **Statut : plan initial réalisé en v1.**
+> Ce document conserve les décisions d'architecture et le raisonnement initial.
+> L'implémentation (schéma, ETL, analyses, dashboard, Jenkins, tests) est
+> documentée dans le [`README`](../README.md), la
+> [`METHODOLOGIE`](METHODOLOGIE.md) et le [`RUNBOOK`](RUNBOOK.md).
 
 ---
 
@@ -351,9 +352,9 @@ superutilisateur :
 ```sql
 -- Exécuté par postgres, une seule fois (ou après changement de mot de passe)
 CREATE ROLE finance LOGIN PASSWORD :'finance_password';
-ALTER DATABASE finance OWNER TO finance;
-\c finance
+\c marine_database
 CREATE SCHEMA IF NOT EXISTS finance AUTHORIZATION finance;
+ALTER SCHEMA finance OWNER TO finance;
 -- puis les GRANT ci-dessus
 ```
 
@@ -663,7 +664,7 @@ outrepasser.
 4. **Corrélation conditionnelle en stress** : corrélation calculée uniquement
    les jours où `URTH < -1 %`. Les corrélations augmentent souvent dans les
    baisses ; c'est une information plus actionnable que la corrélation moyenne.
-5. **Clustering hiérarchique** : ordonner la matrice par groupes (tech, défensif,
+5. **Clustering hiérarchique** : identifier les groupes (tech, défensif,
    taux, or, crypto) plutôt que par ordre alphabétique. Calcul Python + colonne
    `cluster_id`, ou simple ordre manuel dans `assets`.
 6. **Détection de ruptures** : `ruptures` (PELT) sur les corrélations glissantes,

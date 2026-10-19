@@ -1,0 +1,1427 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      },
+      {
+        "datasource": {
+          "type": "postgres",
+          "uid": "${DS_POSTGRESQL}"
+        },
+        "enable": true,
+        "iconColor": "red",
+        "name": "Événements de marché",
+        "target": {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT event_date::timestamptz AS time, title AS text, category AS tags FROM finance.events WHERE $__timeFilter(event_date) ORDER BY event_date;",
+          "refId": "Anno"
+        }
+      },
+      {
+        "datasource": {
+          "type": "postgres",
+          "uid": "${DS_POSTGRESQL}"
+        },
+        "enable": true,
+        "iconColor": "orange",
+        "name": "Ruptures de corrélation",
+        "target": {
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT b.break_date::timestamptz AS time, a.ticker || ' — rupture ' || b.method AS text, 'break' AS tags FROM finance.correlation_breaks b JOIN finance.assets a USING (asset_id) WHERE $__timeFilter(b.break_date) ORDER BY b.break_date;",
+          "refId": "Anno"
+        }
+      }
+    ]
+  },
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "id": 1,
+      "title": "Dernière séance",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT max(last_trade_date)::text AS \"Dernière séance\" FROM finance.v_freshness;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "description": "Date du dernier cours disponible, tous actifs confondus."
+    },
+    {
+      "id": 2,
+      "title": "Actifs suivis",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT count(*) AS \"Actifs\" FROM finance.assets;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "description": "15 actifs core, 4 actions, 3 ETF tech/semi."
+    },
+    {
+      "id": 3,
+      "title": "Dernier import",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT to_char(max(finished_at), 'YYYY-MM-DD HH24:MI') AS \"Dernier import\" FROM finance.ingestion_runs WHERE status IN ('success', 'partial');",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "description": "Dernier run ETL terminé avec succès (ou partiellement)."
+    },
+    {
+      "id": 4,
+      "title": "Paires valides",
+      "type": "stat",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT count(*) AS \"Paires\" FROM finance.corr_pairs(($__timeFrom())::date, ($__timeTo())::date, '$basis', $min_obs);",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "text",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "description": "Nombre de paires disposant d'assez d'observations sur la période."
+    },
+    {
+      "id": 5,
+      "title": "Matrice de corrélation — 15 actifs core",
+      "type": "table",
+      "gridPos": {
+        "h": 16,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT * FROM finance.corr_matrix_core(($__timeFrom())::date, ($__timeTo())::date, '$basis', $min_obs);",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "asset",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "color-background",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": -0.6
+              },
+              {
+                "color": "orange",
+                "value": -0.3
+              },
+              {
+                "color": "gray",
+                "value": -0.1
+              },
+              {
+                "color": "light-blue",
+                "value": 0.1
+              },
+              {
+                "color": "blue",
+                "value": 0.3
+              },
+              {
+                "color": "dark-blue",
+                "value": 0.6
+              },
+              {
+                "color": "purple",
+                "value": 0.8
+              }
+            ]
+          },
+          "min": -1,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "transformations": [],
+      "description": "Corrélation de Pearson des rendements logarithmiques, en EUR par défaut. Chaque cellule est calculée sur les dates communes aux deux actifs ; les paires sans assez d'observations restent vides. L'ordre des lignes/colonnes suit le clustering hiérarchique."
+    },
+    {
+      "id": 6,
+      "title": "Corrélations avec URTH",
+      "type": "bargauge",
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 0,
+        "y": 20
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT asset, correlation, n_obs, ci_low, ci_high FROM finance.corr_benchmark(($__timeFrom())::date, ($__timeTo())::date, '$basis', 'URTH', $min_obs) ORDER BY correlation DESC;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "orientation": "horizontal",
+        "displayMode": "gradient",
+        "showUnfilled": true,
+        "valueMode": "color",
+        "namePlacement": "auto",
+        "sizing": "auto",
+        "minVizHeight": 16,
+        "maxVizHeight": 300,
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "min": -1,
+          "max": 1,
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": -0.6
+              },
+              {
+                "color": "orange",
+                "value": -0.3
+              },
+              {
+                "color": "gray",
+                "value": -0.1
+              },
+              {
+                "color": "light-blue",
+                "value": 0.1
+              },
+              {
+                "color": "blue",
+                "value": 0.3
+              },
+              {
+                "color": "dark-blue",
+                "value": 0.6
+              },
+              {
+                "color": "purple",
+                "value": 0.8
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "description": "Classement des actifs par corrélation avec le MSCI World. La corrélation est une mesure de co-mouvement, pas de performance."
+    },
+    {
+      "id": 7,
+      "title": "Matrice 3 × 3 — ETF tech/semi",
+      "type": "table",
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 8,
+        "y": 20
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT * FROM finance.corr_matrix_tech(($__timeFrom())::date, ($__timeTo())::date, '$basis', $min_obs);",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "asset",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "color-background",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": -0.6
+              },
+              {
+                "color": "orange",
+                "value": -0.3
+              },
+              {
+                "color": "gray",
+                "value": -0.1
+              },
+              {
+                "color": "light-blue",
+                "value": 0.1
+              },
+              {
+                "color": "blue",
+                "value": 0.3
+              },
+              {
+                "color": "dark-blue",
+                "value": 0.6
+              },
+              {
+                "color": "purple",
+                "value": 0.8
+              }
+            ]
+          },
+          "min": -1,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "transformations": [],
+      "description": "Comparateurs pertinents pour ASML et BESI : SMH, SOXX et VGT."
+    },
+    {
+      "id": 8,
+      "title": "Bêta et R² — $stock vs $etf",
+      "type": "table",
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 20
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT asset, benchmark, beta, r2, correlation, n_obs FROM finance.beta_vs_benchmark('$stock', '$etf', ($__timeFrom())::date, ($__timeTo())::date, '$basis');",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "asset",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "transformations": [],
+      "description": "Bêta = pente de l'action contre l'ETF ; R² = part de variance expliquée. Une corrélation forte avec une bêta faible signifie un co-mouvement peu amplifié."
+    },
+    {
+      "id": 9,
+      "title": "Matrice — 4 actions × 15 ETF",
+      "type": "table",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT * FROM finance.corr_matrix_stocks(($__timeFrom())::date, ($__timeTo())::date, '$basis', $min_obs);",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "asset",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "color-background",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": -0.6
+              },
+              {
+                "color": "orange",
+                "value": -0.3
+              },
+              {
+                "color": "gray",
+                "value": -0.1
+              },
+              {
+                "color": "light-blue",
+                "value": 0.1
+              },
+              {
+                "color": "blue",
+                "value": 0.3
+              },
+              {
+                "color": "dark-blue",
+                "value": 0.6
+              },
+              {
+                "color": "purple",
+                "value": 0.8
+              }
+            ]
+          },
+          "min": -1,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "transformations": [],
+      "description": "ASML, BESI, NOVO et SMA Solar contre les 15 actifs core. Les corrélations sont généralement plus faibles que dans la matrice ETF : les ETF SPDR sont US et ne contiennent pas nécessairement ces valeurs européennes."
+    },
+    {
+      "id": 10,
+      "title": "Corrélations glissantes vs URTH — fenêtre $window",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 12,
+        "w": 14,
+        "x": 0,
+        "y": 41
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "rawSql": "SELECT trade_date::timestamptz AS time, asset AS metric, correlation AS value FROM finance.rolling_corr_all('URTH', $window, ($__timeFrom())::date, ($__timeTo())::date, '$basis') WHERE asset IN ($assets) ORDER BY trade_date;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "decimals": 2,
+          "min": -1,
+          "max": 1,
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "description": "Corrélation calculée sur les N dernières observations communes avec URTH. Fenêtres 63 / 126 / 252 séances. Les fenêtres longues sont plus stables, les courtes réagissent plus vite."
+    },
+    {
+      "id": 11,
+      "title": "Corrélation glissante — $stock vs $etf",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 12,
+        "w": 10,
+        "x": 14,
+        "y": 41
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "time_series",
+          "rawSql": "SELECT trade_date::timestamptz AS time, correlation AS value FROM finance.rolling_corr('$stock', '$etf', $window, ($__timeFrom())::date, ($__timeTo())::date, '$basis') ORDER BY trade_date;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 2,
+            "showPoints": "never",
+            "spanNulls": false,
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "decimals": 2,
+          "min": -1,
+          "max": 1,
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "description": "Suivi dans le temps de la corrélation entre une action et un ETF. Comparer la ligne à la corrélation pleine période pour repérer un régime."
+    },
+    {
+      "id": 12,
+      "title": "Corrélation conditionnelle en stress",
+      "type": "table",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 53
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT asset, correlation_stress, n_stress, correlation_all, n_all FROM finance.stress_corr('URTH', -0.01, ($__timeFrom())::date, ($__timeTo())::date, '$basis', 20) ORDER BY correlation_stress DESC;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "asset",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "color-background",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": -0.6
+              },
+              {
+                "color": "orange",
+                "value": -0.3
+              },
+              {
+                "color": "gray",
+                "value": -0.1
+              },
+              {
+                "color": "light-blue",
+                "value": 0.1
+              },
+              {
+                "color": "blue",
+                "value": 0.3
+              },
+              {
+                "color": "dark-blue",
+                "value": 0.6
+              },
+              {
+                "color": "purple",
+                "value": 0.8
+              }
+            ]
+          },
+          "min": -1,
+          "max": 1
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "n_stress"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "auto"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "n_all"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "auto"
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [],
+      "description": "Corrélation uniquement les jours où URTH perd plus de 1 %, contre la corrélation sur toute la période. Les corrélations montent souvent dans les baisses : un actif diversifiant en temps normal peut ne plus l'être en stress."
+    },
+    {
+      "id": 13,
+      "title": "Statistiques par actif",
+      "type": "table",
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 53
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT ticker, name, category, n_obs, annualized_vol, cumulative_return, max_drawdown FROM finance.v_asset_stats ORDER BY display_order;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "ticker",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "annualized_vol"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cumulative_return"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max_drawdown"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [],
+      "description": "Volatilité annualisée, rendement cumulé et drawdown maximal, calculés en EUR sur tout l'historique disponible (pas seulement la fenêtre Grafana)."
+    },
+    {
+      "id": 16,
+      "title": "Groupes de corrélation",
+      "type": "table",
+      "gridPos": {
+        "h": 7,
+        "w": 10,
+        "x": 0,
+        "y": 63
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT ticker, cluster_id, cluster_label, universe FROM finance.assets ORDER BY cluster_id, display_order;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "ticker",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "transformations": [],
+      "description": "Clustering hiérarchique (average linkage sur 1 - corrélation), recalculé à chaque ETL sur les 3 dernières années. Les groupes changent avec la période : c'est une aide à la lecture, pas une classification officielle."
+    },
+    {
+      "id": 14,
+      "title": "Fraîcheur par actif",
+      "type": "table",
+      "gridPos": {
+        "h": 7,
+        "w": 14,
+        "x": 10,
+        "y": 63
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT ticker, name, universe, last_trade_date, days_since_last_trade, hours_since_last_run FROM finance.v_freshness ORDER BY display_order;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "ticker",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "auto",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "days_since_last_trade"
+            },
+            "properties": [
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 5
+                    },
+                    {
+                      "color": "red",
+                      "value": 10
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "transformations": [],
+      "description": "Contrôle opérationnel : âge de la dernière séance et du dernier import. Un actif européen peut avoir un jour de retard sur URTH selon les fériés."
+    },
+    {
+      "id": 17,
+      "title": "Corrélations annuelles vs URTH",
+      "type": "table",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 70
+      },
+      "datasource": {
+        "type": "postgres",
+        "uid": "${DS_POSTGRESQL}"
+      },
+      "targets": [
+        {
+          "format": "table",
+          "rawSql": "SELECT year, asset, correlation, n_obs FROM finance.corr_by_year(($__timeFrom())::date, ($__timeTo())::date, '$basis', 'URTH', 20) WHERE asset IN ($assets) ORDER BY year, asset;",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "year",
+            "desc": false
+          }
+        ]
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "displayMode": "color-background",
+            "inspect": false
+          },
+          "decimals": 2,
+          "unit": "none",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "dark-red",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": -0.6
+              },
+              {
+                "color": "orange",
+                "value": -0.3
+              },
+              {
+                "color": "gray",
+                "value": -0.1
+              },
+              {
+                "color": "light-blue",
+                "value": 0.1
+              },
+              {
+                "color": "blue",
+                "value": 0.3
+              },
+              {
+                "color": "dark-blue",
+                "value": 0.6
+              },
+              {
+                "color": "purple",
+                "value": 0.8
+              }
+            ]
+          },
+          "min": -1,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "transformations": [],
+      "description": "Corrélation par année civile avec URTH. Permet de voir les grands régimes (COVID, resserrement 2022, rallye IA). Les années avec moins de 20 observations sont ignorées ; n_obs est affiché."
+    },
+    {
+      "id": 15,
+      "title": "Méthodologie et limites",
+      "type": "text",
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 80
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "\n## Ce que mesure ce dashboard\n\nLes corrélations portent sur les **rendements logarithmiques quotidiens** :\n`r_t = ln(P_t / P_{t-1})`, où `P_t` est la clôture ajustée (splits et dividendes).\nDeux bases sont disponibles :\n\n* **EUR** (défaut) : conversion au taux de change du jour, représentative d'un\n  investisseur européen ;\n* **LOCAL** : devise de cotation, pour isoler l'effet action de l'effet change.\n\nLa corrélation de Pearson est calculée **par paire**, sur les dates où les deux\nactifs ont une observation. Les paires sans assez d'observations sont masquées.\nL'intervalle de confiance à 95 % utilise la transformation de Fisher.\n\n## Fenêtres et régimes\n\nLes fenêtres glissantes 63 / 126 / 252 séances correspondent à environ 3, 6 et\n12 mois. Une fenêtre courte réagit vite mais est bruitée ; une fenêtre longue\nest plus stable mais amortit les changements. Les **snapshots mensuels** et les\n**corrélations annuelles** sont disponibles via les fonctions SQL.\n\nLe clustering hiérarchique (average linkage sur `1 - corrélation`) identifie des\ngroupes et ordonne les listes. La matrice conserve l'ordre de référence pour que\nles lignes et les colonnes coïncident : une matrice doit rester lisible en\ndiagonale. Les groupes sont visibles dans le panneau « Groupes de corrélation ».\nIls ne sont pas une classification officielle : c'est une aide à la lecture.\n\n## Bêta, R² et stress\n\n* **Bêta** : pente de régression de l'action sur l'ETF. Bêta > 1 = amplifie les\n  mouvements de l'ETF ; bêta < 1 = les amortit.\n* **R²** : part de la variance de l'action expliquée par l'ETF.\n* **Corrélation de stress** : calculée uniquement les jours où URTH perd plus\n  de 1 %. Elle peut être très différente de la corrélation moyenne.\n\n## Précautions\n\n* Corrélation ≠ causalité. Deux actifs peuvent être corrélés parce qu'ils\n  partagent un facteur (marché, taux, dollar, secteur) ou par coïncidence.\n* Les ETF SPDR sont **américains** : une action européenne peut avoir une\n  corrélation faible simplement parce qu'elle n'est pas dans l'indice.\n* Les fenêtres glissantes se chevauchent : les points ne sont pas indépendants.\n* Les tests multiples sont nombreux (15 × 15 paires) : ne pas surinterpréter une\n  corrélation isolée à 0,3.\n* Les données Yahoo sont révisables (dividendes, splits). L'ETL remplace\n  l'historique complet à chaque passage pour éviter les prix figés.\n* Les annotations « ruptures » sont indicatives : `ruptures` (PELT/Binseg) ou,\n  à défaut, une segmentation binaire interne. Ce n'est pas un test statistique\n  de causalité.\n"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    }
+  ],
+  "refresh": "1h",
+  "schemaVersion": 30,
+  "tags": [
+    "finance",
+    "correlation",
+    "etf"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "PostgreSQL",
+          "value": "PostgreSQL"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Datasource",
+        "multi": false,
+        "name": "DS_POSTGRESQL",
+        "options": [],
+        "query": "postgres",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "EUR",
+          "value": "EUR"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Base de calcul",
+        "multi": false,
+        "name": "basis",
+        "options": [
+          {
+            "selected": true,
+            "text": "EUR",
+            "value": "EUR"
+          },
+          {
+            "selected": false,
+            "text": "LOCAL",
+            "value": "LOCAL"
+          }
+        ],
+        "query": "EUR,LOCAL",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "126",
+          "value": "126"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Fenêtre glissante (séances)",
+        "multi": false,
+        "name": "window",
+        "options": [
+          {
+            "selected": false,
+            "text": "63",
+            "value": "63"
+          },
+          {
+            "selected": true,
+            "text": "126",
+            "value": "126"
+          },
+          {
+            "selected": false,
+            "text": "252",
+            "value": "252"
+          }
+        ],
+        "query": "63,126,252",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "60",
+          "value": "60"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Observations minimales",
+        "multi": false,
+        "name": "min_obs",
+        "options": [
+          {
+            "selected": false,
+            "text": "30",
+            "value": "30"
+          },
+          {
+            "selected": true,
+            "text": "60",
+            "value": "60"
+          },
+          {
+            "selected": false,
+            "text": "120",
+            "value": "120"
+          },
+          {
+            "selected": false,
+            "text": "252",
+            "value": "252"
+          }
+        ],
+        "query": "30,60,120,252",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "ASML",
+          "value": "ASML"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "${DS_POSTGRESQL}"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Action",
+        "multi": false,
+        "name": "stock",
+        "options": [],
+        "query": "SELECT ticker FROM finance.assets WHERE universe = 'stock' ORDER BY ticker;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "SMH",
+          "value": "SMH"
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "${DS_POSTGRESQL}"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "ETF comparateur",
+        "multi": false,
+        "name": "etf",
+        "options": [],
+        "query": "SELECT ticker FROM finance.assets WHERE asset_type = 'etf' ORDER BY universe, ticker;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "XLK",
+            "XLE",
+            "XLU",
+            "GLD",
+            "TLT"
+          ],
+          "value": [
+            "XLK",
+            "XLE",
+            "XLU",
+            "GLD",
+            "TLT"
+          ]
+        },
+        "datasource": {
+          "type": "postgres",
+          "uid": "${DS_POSTGRESQL}"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "Actifs (courbes)",
+        "multi": true,
+        "name": "assets",
+        "options": [],
+        "query": "SELECT ticker FROM finance.assets WHERE universe = 'core' ORDER BY display_order;",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "2018-07-01",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Finance — Corrélations ETF & actions",
+  "uid": "finance-correlation",
+  "version": 1
+}
