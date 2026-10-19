@@ -1,0 +1,21 @@
+# Environnements Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Secrets locaux
+.env
+.env.*
+!.env.example
+
+# Données téléchargées pour le débogage
+.cache/
+data/raw/
+
+# Logs et divers
+*.log
+.DS_Store
+.idea/
+.vscode/
