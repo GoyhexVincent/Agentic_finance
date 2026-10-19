@@ -72,13 +72,22 @@ sudo -u postgres make db-create
 
 ### 3.2 Créer le rôle et le schéma
 
-En superutilisateur `postgres`, depuis la base `postgres` :
+Le plus simple, depuis la racine du dépôt :
 
 ```bash
-psql -U postgres -d postgres \
-     -v finance_password='UN_MOT_DE_PASSE_SOLIDE' \
-     -v dbname='finance_db' \
-     -f sql/00_bootstrap.sql
+bash scripts/bootstrap_finance_db.sh
+```
+
+Le script crée la base si besoin, demande le mot de passe `finance` et exécute
+`sql/00_bootstrap.sql`. Il force `-U postgres` pour éviter les conflits avec un
+`PGUSER` résiduel.
+
+Équivalent manuel, en une seule ligne `psql` :
+
+```bash
+read -rsp 'Mot de passe finance : ' FINANCE_PASSWORD; echo
+sudo -u postgres psql -U postgres -d postgres -v finance_password="$FINANCE_PASSWORD" -v dbname=finance_db < sql/00_bootstrap.sql
+unset FINANCE_PASSWORD
 ```
 
 Le script :

@@ -169,11 +169,21 @@ sudo -u postgres make db-create
 
 #### 2. Créer le rôle et le schéma
 
+La méthode la plus simple, sans continuation de ligne ni `PGUSER` résiduel :
+
 ```bash
-psql -U postgres -d postgres \
-     -v finance_password='UN_MOT_DE_PASSE_SOLIDE' \
-     -v dbname='finance_db' \
-     -f sql/00_bootstrap.sql
+bash scripts/bootstrap_finance_db.sh
+```
+
+Le script crée `finance_db` si besoin, demande le mot de passe du rôle
+`finance`, puis exécute `sql/00_bootstrap.sql`.
+
+Équivalent manuel, en une seule commande `psql` :
+
+```bash
+read -rsp 'Mot de passe finance : ' FINANCE_PASSWORD; echo
+sudo -u postgres psql -U postgres -d postgres -v finance_password="$FINANCE_PASSWORD" -v dbname=finance_db < sql/00_bootstrap.sql
+unset FINANCE_PASSWORD
 ```
 
 Le script crée le rôle `finance`, le schéma `finance`, révoque les droits
@@ -235,6 +245,7 @@ Finance_tracker/
 │   └── analytics.py                # clustering, ruptures
 ├── scripts/
 │   ├── create_database.sh          # création idempotente de finance_db
+│   ├── bootstrap_finance_db.sh     # rôle + schéma + droits, en une commande
 │   ├── verify_freshness.py
 │   └── build_dashboard.py
 ├── tests/
