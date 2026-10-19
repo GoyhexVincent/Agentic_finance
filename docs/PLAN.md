@@ -87,14 +87,16 @@ Nous reprenons ces principes, avec deux différences assumées :
 Vérifications effectuées sur la machine où se trouve ce dépôt :
 
 - PostgreSQL 17 est actif ;
-- la base `finance` existe déjà, mais elle est vide (schéma `public`
-  uniquement) et appartient à `postgres` ;
+- l'ancienne base de test locale `finance` existe déjà, mais elle est vide (schéma `public`
+  uniquement) et appartient à `postgres` ; elle a servi de base de test locale,
+  tandis que la cible du projet est la base dédiée `finance_db` ;
 - le rôle `finance` n'existe pas ;
 - le rôle `grafana` n'existe pas ;
 - Jenkins et Grafana ne sont pas installés/actifs localement ;
 - l'API Yahoo Finance est accessible depuis cette machine ;
 - les projets DVF/NDBC pointent vers `marine_database`, absente de cette
-  machine : le déploiement de production est donc probablement ailleurs.
+  machine ; le nouveau projet utilisera au contraire la base dédiée
+  `finance_db`, à créer sur le Pi.
 
 Conséquence : les scripts seront **entièrement paramétrables par variables
 d'environnement**. La création du rôle `finance` nécessitera un accès
@@ -352,7 +354,7 @@ superutilisateur :
 ```sql
 -- Exécuté par postgres, une seule fois (ou après changement de mot de passe)
 CREATE ROLE finance LOGIN PASSWORD :'finance_password';
-\c marine_database
+\c finance_db
 CREATE SCHEMA IF NOT EXISTS finance AUTHORIZATION finance;
 ALTER SCHEMA finance OWNER TO finance;
 -- puis les GRANT ci-dessus

@@ -8,7 +8,7 @@
 --  Exemple :
 --      psql -U postgres -d postgres \
 --           -v finance_password='un_mot_de_passe_solide' \
---           -v dbname='marine_database' \
+--           -v dbname='finance_db' \
 --           -f sql/00_bootstrap.sql
 --
 --  Le mot de passe n'est jamais stocké dans le dépôt. Utiliser un gestionnaire
@@ -27,7 +27,7 @@
 -- Valeurs par défaut surchargeables avec -v dbname=... -v finance_password=...
 \if :{?dbname}
 \else
-  \set dbname marine_database
+  \set dbname finance_db
 \endif
 
 \if :{?finance_password}
@@ -46,8 +46,8 @@ WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'finance')
 ALTER ROLE finance LOGIN PASSWORD :'finance_password' NOSUPERUSER NOCREATEDB NOCREATEROLE;
 
 -- ───────────────────────────── Base cible ─────────────────────────────
--- La base est créée si elle n'existe pas. En production, "marine_database"
--- existe déjà (projet NDBC) : le bloc est alors un no-op.
+-- La base dédiée est créée si elle n'existe pas. Si elle a déjà été créée
+-- par scripts/create_database.sh, le bloc est un no-op idempotent.
 SELECT format('CREATE DATABASE %I OWNER postgres', :'dbname')
 WHERE NOT EXISTS (SELECT 1 FROM pg_database WHERE datname = :'dbname')
 \gexec

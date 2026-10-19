@@ -81,13 +81,13 @@ def _iso_date(name: str, default: date) -> date:
 
 
 # Base de données. En production sur le Raspberry Pi :
-#   PGDATABASE=marine_database, PGUSER=finance, PGPASSWORD=...
-# En développement local, un .env peut pointer vers la base `finance` et le
-# rôle `oryx` (authentification peer, sans mot de passe).
+#   PGDATABASE=finance_db, PGUSER=finance, PGPASSWORD=...
+# En développement local, créer finance_db et utiliser le rôle `oryx`
+# (authentification peer, sans mot de passe) via .env.
 DB_CONFIG = {
     "host": _str("PGHOST", "localhost"),
     "port": _int("PGPORT", 5432),
-    "dbname": _str("PGDATABASE", "finance"),
+    "dbname": _str("PGDATABASE", "finance_db"),
     "user": _str("PGUSER", "finance"),
     "password": os.getenv("PGPASSWORD") or None,
 }

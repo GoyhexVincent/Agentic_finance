@@ -48,7 +48,7 @@ Jenkins → Grafana.
              ▼
 ┌──────────────────────────┐
 │ PostgreSQL 17            │
-│ base   : marine_database │
+│ base   : finance_db      │
 │ schéma : finance         │
 │ rôle   : finance         │
 │ vues + fonctions SQL     │
@@ -66,8 +66,10 @@ Jenkins → Grafana.
 └──────────────────────────┘
 ```
 
-En développement local, la base peut être `finance` et le rôle `oryx`
-(authentification peer). Le schéma reste `finance`.
+En développement local, la base dédiée est aussi `finance_db`, avec le rôle
+d'administration local (`oryx` sur cette machine) et le schéma `finance`. Le
+fichier `.env` permet de choisir l'utilisateur et le mot de passe sans modifier
+le code.
 
 ---
 
@@ -109,11 +111,15 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 
+# Créer la base dédiée (une seule fois). En local, faire posséder la base
+# par le rôle de développement pour pouvoir y créer le schéma :
+sudo -u postgres bash scripts/create_database.sh finance_db "$USER"
+
 cp .env.example .env
-# Adapter : PGDATABASE=finance, PGUSER=oryx, PGPASSWORD=vide,
+# Adapter : PGDATABASE=finance_db, PGUSER=oryx, PGPASSWORD=vide,
 # PGHOST=/var/run/postgresql pour l'authentification peer.
 
-psql -d finance -f sql/10_schema.sql
+psql -d finance_db -f sql/10_schema.sql
 python -m finance_tracker.etl
 python scripts/verify_freshness.py
 ```
@@ -125,24 +131,46 @@ Le dashboard s'importe ensuite dans Grafana :
 
 ## Déploiement Raspberry Pi
 
-### 1. Créer le rôle et le schéma
+### 1. Créer la base `finance_db`
+
+La commande idempotente fournie par le dépôt :
+
+```bash
+sudo -u postgres bash scripts/create_database.sh finance_db
+```
+
+Équivalent direct :
+
+```bash
+sudo -u postgres createdb -O postgres finance_db
+```
+
+Ou, si `make` est disponible :
+
+```bash
+sudo -u postgres make db-create
+```
+
+### 2. Créer le rôle et le schéma
 
 ```bash
 psql -U postgres -d postgres \
      -v finance_password='UN_MOT_DE_PASSE_SOLIDE' \
-     -v dbname='marine_database' \
+     -v dbname='finance_db' \
      -f sql/00_bootstrap.sql
 ```
 
 Le script crée le rôle `finance`, le schéma `finance`, révoque les droits
-PUBLIC et accorde la lecture à `grafana` si le rôle existe.
+PUBLIC et accorde la lecture à `grafana` si le rôle existe. Il crée aussi la
+base si elle n'existe pas déjà : l'étape 1 est surtout là pour disposer d'une
+commande explicite et vérifiable.
 
-### 2. Configurer l'environnement
+### 3. Configurer l'environnement
 
 ```dotenv
 PGHOST=localhost
 PGPORT=5432
-PGDATABASE=marine_database
+PGDATABASE=finance_db
 PGUSER=finance
 PGPASSWORD=...
 FINANCE_SCHEMA=finance
@@ -150,14 +178,14 @@ FINANCE_START_DATE=2015-01-01
 FINANCE_MIN_IMPORT_INTERVAL_HOURS=18
 ```
 
-### 3. Lancer le backfill
+### 4. Lancer le backfill
 
 ```bash
 . .venv/bin/activate
 python -m finance_tracker.etl
 ```
 
-### 4. Jenkins
+### 5. Jenkins
 
 - Job **Pipeline script from SCM**, branche `main`, script `Jenkinsfile`.
 - Credential **Secret text** `pg-password-finance`.
@@ -176,6 +204,7 @@ Finance_tracker/
 ├── Jenkinsfile
 ├── requirements.txt
 ├── requirements-optional.txt       # ruptures (PELT/Binseg)
+├── Makefile                        # db-create, db-bootstrap, etl, tests…
 ├── .env.example
 ├── sql/
 │   ├── 00_bootstrap.sql            # rôle, base, schéma, droits (superuser)
@@ -188,6 +217,7 @@ Finance_tracker/
 │   ├── etl.py                      # orchestration
 │   └── analytics.py                # clustering, ruptures
 ├── scripts/
+│   ├── create_database.sh          # création idempotente de finance_db
 │   ├── verify_freshness.py
 │   └── build_dashboard.py
 ├── tests/

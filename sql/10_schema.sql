@@ -1,13 +1,13 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 --  Finance Tracker — schéma de données et fonctions d'analyse
 --
---  Base   : marine_database (production) ou finance (développement local)
+--  Base   : finance_db (production et développement local)
 --  Schéma : finance
 --  Rôle   : finance (propriétaire)
 --
 --  Le script est idempotent. Il est rejoué par l'ETL à chaque exécution.
 --  Il peut aussi être appliqué à la main :
---      psql -U finance -d marine_database -f sql/10_schema.sql
+--      psql -U finance -d finance_db -f sql/10_schema.sql
 --
 --  Contenu :
 --    1. référentiel des actifs

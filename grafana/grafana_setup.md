@@ -1,7 +1,7 @@
 # Guide Grafana — Finance Tracker
 
 > Dashboard : `grafana/dashboard_finance.json`
-> Datasource : PostgreSQL, base `marine_database`, schéma `finance`, rôle
+> Datasource : PostgreSQL, base `finance_db`, schéma `finance`, rôle
 > `grafana` en lecture seule.
 
 ---
@@ -10,7 +10,7 @@
 
 - Grafana installé (testé avec les versions 10/11 ; le JSON utilise le
   `schemaVersion` 30, compatible avec les versions récentes).
-- Base `marine_database` accessible depuis Grafana.
+- Base `finance_db` accessible depuis Grafana.
 - Schéma `finance` créé par `sql/00_bootstrap.sql` + `sql/10_schema.sql`.
 - Rôle `grafana` existant, ou un rôle de lecture dédié.
 
@@ -25,7 +25,7 @@ En superutilisateur `postgres` :
 
 ```sql
 CREATE USER grafana WITH PASSWORD '...';
-GRANT CONNECT ON DATABASE marine_database TO grafana;
+GRANT CONNECT ON DATABASE finance_db TO grafana;
 GRANT USAGE ON SCHEMA finance TO grafana;
 GRANT SELECT ON ALL TABLES IN SCHEMA finance TO grafana;
 ALTER DEFAULT PRIVILEGES FOR ROLE finance IN SCHEMA finance
@@ -42,7 +42,7 @@ suffit de lui donner les droits sur le schéma `finance`.
 Vérification :
 
 ```bash
-psql -U finance -d marine_database -c "\dp finance.*"
+psql -U finance -d finance_db -c "\dp finance.*"
 ```
 
 ---
@@ -56,7 +56,7 @@ PostgreSQL**.
 |---|---|
 | Name | `Finance-PostgreSQL` |
 | Host | `localhost:5432` (ou l'IP du Pi) |
-| Database | `marine_database` |
+| Database | `finance_db` |
 | User | `grafana` |
 | Password | mot de passe du rôle |
 | SSL Mode | `disable` en local |

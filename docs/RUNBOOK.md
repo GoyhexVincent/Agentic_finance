@@ -10,8 +10,8 @@ résolution des erreurs fréquentes.
 
 | Environnement | Base | Rôle | Schéma | Grafana/Jenkins |
 |---|---|---|---|---|
-| Développement local | `finance` | `oryx` (peer) | `finance` | non installés |
-| Raspberry Pi / production | `marine_database` | `finance` | `finance` | Jenkins + Grafana |
+| Développement local | `finance_db` | `oryx` (peer) | `finance` | non installés |
+| Raspberry Pi / production | `finance_db` | `finance` | `finance` | Jenkins + Grafana |
 
 Le schéma est **toujours** `finance`. Seuls la base, l'utilisateur et le mot de
 passe changent. Le fichier `.env` local permet de développer sans toucher à la
@@ -27,15 +27,18 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 
+# Créer la base locale, possédée par le rôle de développement
+sudo -u postgres bash scripts/create_database.sh finance_db "$USER"
+
 cp .env.example .env
-# Éditer .env : PGDATABASE=finance, PGUSER=oryx, PGPASSWORD= (vide)
+# Éditer .env : PGDATABASE=finance_db, PGUSER=oryx, PGPASSWORD= (vide)
 # et PGHOST=/var/run/postgresql pour l'authentification peer locale.
 ```
 
 Appliquer le schéma :
 
 ```bash
-psql -d finance -f sql/10_schema.sql
+psql -d finance_db -f sql/10_schema.sql
 ```
 
 Lancer un premier import :
@@ -54,14 +57,26 @@ python scripts/verify_freshness.py
 
 ## 3. Déploiement sur le Raspberry Pi
 
-### 3.1 Créer le rôle et le schéma
+### 3.1 Créer la base `finance_db`
+
+Commande idempotente fournie :
+
+```bash
+sudo -u postgres bash scripts/create_database.sh finance_db
+# ou
+sudo -u postgres createdb -O postgres finance_db
+# ou
+sudo -u postgres make db-create
+```
+
+### 3.2 Créer le rôle et le schéma
 
 En superutilisateur `postgres`, depuis la base `postgres` :
 
 ```bash
 psql -U postgres -d postgres \
      -v finance_password='UN_MOT_DE_PASSE_SOLIDE' \
-     -v dbname='marine_database' \
+     -v dbname='finance_db' \
      -f sql/00_bootstrap.sql
 ```
 
@@ -77,22 +92,22 @@ Le script :
 > Le mot de passe doit être stocké dans le credential Jenkins
 > `pg-password-finance`, jamais dans le dépôt. Le script ne le contient pas.
 
-### 3.2 Appliquer le schéma
+### 3.3 Appliquer le schéma
 
 ```bash
-PGPASSWORD='...' psql -U finance -d marine_database -f sql/10_schema.sql
+PGPASSWORD='...' psql -U finance -d finance_db -f sql/10_schema.sql
 ```
 
 Ou simplement lancer l'ETL : il rejoue le schéma à chaque exécution.
 
-### 3.3 Configurer l'environnement
+### 3.4 Configurer l'environnement
 
 Créer `.env` (ou utiliser les variables Jenkins) :
 
 ```dotenv
 PGHOST=localhost
 PGPORT=5432
-PGDATABASE=marine_database
+PGDATABASE=finance_db
 PGUSER=finance
 PGPASSWORD=...
 FINANCE_SCHEMA=finance
@@ -101,7 +116,7 @@ FINANCE_MIN_OBS=60
 FINANCE_MIN_IMPORT_INTERVAL_HOURS=18
 ```
 
-### 3.4 Premier backfill
+### 3.5 Premier backfill
 
 ```bash
 . .venv/bin/activate
@@ -113,7 +128,7 @@ python -m finance_tracker.etl
 Compter ~10–20 secondes de téléchargement et quelques secondes d'écriture sur
 un Pi. Le backfill peut être relancé avec `--force` pour ignorer le garde-fou.
 
-### 3.5 Job Jenkins
+### 3.6 Job Jenkins
 
 1. Créer un job **Pipeline script from SCM**.
 2. SCM : dépôt `Finance_tracker`, branche `main`, script `Jenkinsfile`.
@@ -156,7 +171,7 @@ python scripts/build_dashboard.py
 
 1. **Administration → Data sources → PostgreSQL**.
    - Host : `localhost:5432`
-   - Database : `marine_database`
+   - Database : `finance_db`
    - User : `grafana`
    - SSL : `disable` (local)
    - TimescaleDB : **non** (PostgreSQL standard)
@@ -288,14 +303,14 @@ Un actif secondaire a échoué : les autres sont à jour. Consulter
 Les données sont petites. Une sauvegarde logique suffit :
 
 ```bash
-pg_dump -U finance -d marine_database -n finance -Fc \
+pg_dump -U finance -d finance_db -n finance -Fc \
   -f finance_$(date +%F).dump
 ```
 
 Restauration :
 
 ```bash
-pg_restore -U finance -d marine_database -n finance finance_2026-10-19.dump
+pg_restore -U finance -d finance_db -n finance finance_2026-10-19.dump
 ```
 
 Les données pouvant être retéléchargées, la sauvegarde est surtout utile pour

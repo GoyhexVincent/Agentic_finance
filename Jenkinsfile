@@ -25,7 +25,7 @@ pipeline {
     environment {
         PGHOST     = "localhost"
         PGPORT     = "5432"
-        PGDATABASE = "marine_database"
+        PGDATABASE = "finance_db"
         PGUSER     = "finance"
         PGPASSWORD = credentials("pg-password-finance")
 
