@@ -23,7 +23,7 @@ verify:
 	python scripts/verify_freshness.py
 
 test:
-	python -m unittest discover -s tests -v
+	python -m pytest -q tests
 
 dashboard:
 	python scripts/build_dashboard.py

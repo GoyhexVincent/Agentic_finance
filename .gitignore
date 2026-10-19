@@ -1,22 +1,31 @@
-# Environnements Python
+# Environnement et secrets
+.env
+.env.*
+!.env.example
 .venv/
 venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
 
-# Secrets locaux
-.env
-.env.*
-!.env.example
-
-# Données téléchargées pour le débogage
+# Données téléchargées pour le débogage (Finance Tracker)
 .cache/
 data/raw/
+
+# Sorties générées (les fixtures sont versionnées)
+data/output/*
+!data/output/.gitkeep
 
 # Logs, sauvegardes et divers
 *.log
 *.dump
+
+# OS / éditeurs
 .DS_Store
 .idea/
 .vscode/

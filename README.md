@@ -1,4 +1,20 @@
-# Finance Tracker
+# Agentic Finance
+
+Ce dépôt héberge deux projets indépendants, partageant le même dépôt Git mais
+pas le même runtime :
+
+| Projet | Rôle | Documentation |
+|---|---|---|
+| **Finance Tracker** | ETF, actions, corrélations, PostgreSQL, Jenkins, Grafana | ce README |
+| **SMA92 Options Lab** | Monte Carlo SMA Solar, options Saxo SIM, rapports | [README_SMA92.md](README_SMA92.md) |
+
+Le projet Finance Tracker est la partie principale de ce dépôt. Le laboratoire
+SMA92 est conservé comme second projet, avec ses propres dépendances et ses
+propres tests.
+
+---
+
+## Finance Tracker
 
 Pipeline de collecte, de stockage et de visualisation de données de marché :
 cours quotidiens d'ETF sectoriels et d'actions, calcul de corrélations, suivi de
@@ -14,7 +30,7 @@ Jenkins → Grafana.
 
 ---
 
-## Objectif
+### Objectif
 
 1. Récupérer l'historique quotidien des 15 actifs du script R
    `r_dataviz/finance_simplified/correlations_etf.R` :
@@ -30,7 +46,7 @@ Jenkins → Grafana.
 
 ---
 
-## Architecture
+### Architecture
 
 ```
 ┌──────────────────────────┐
@@ -73,9 +89,9 @@ le code.
 
 ---
 
-## Fonctionnalités
+### Fonctionnalités
 
-### Données
+#### Données
 
 - 22 actifs : 15 core, 4 actions, 3 ETF tech/semi.
 - Prix OHLCV + clôture ajustée (splits/dividendes).
@@ -83,7 +99,7 @@ le code.
 - Backfill depuis 2015, mise à jour quotidienne.
 - Journal d'exécution (`finance.ingestion_runs`), contrôle de fraîcheur.
 
-### Analyses
+#### Analyses
 
 - Corrélation de Pearson par paires, avec `n_obs` et IC 95 % (Fisher).
 - Rendements en EUR (défaut) ou en devise locale (`LOCAL`).
@@ -95,7 +111,7 @@ le code.
   binaire interne).
 - Événements de marché et ruptures annotés dans Grafana.
 
-### Dashboard
+#### Dashboard
 
 17 panneaux : matrice 15 × 15, classement vs URTH, matrice tech 3 × 3,
 bêta/R², matrice 4 × 15 actions × ETF, corrélations glissantes, stress,
@@ -103,7 +119,7 @@ statistiques, fraîcheur, méthodologie.
 
 ---
 
-## Démarrage rapide (développement local)
+### Démarrage rapide (développement local)
 
 ```bash
 cd Finance_tracker
@@ -111,13 +127,13 @@ python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
 
-# Créer la base dédiée (une seule fois). En local, faire posséder la base
-# par le rôle de développement pour pouvoir y créer le schéma :
+## Créer la base dédiée (une seule fois). En local, faire posséder la base
+## par le rôle de développement pour pouvoir y créer le schéma :
 sudo -u postgres bash scripts/create_database.sh finance_db "$USER"
 
 cp .env.example .env
-# Adapter : PGDATABASE=finance_db, PGUSER=oryx, PGPASSWORD=vide,
-# PGHOST=/var/run/postgresql pour l'authentification peer.
+## Adapter : PGDATABASE=finance_db, PGUSER=oryx, PGPASSWORD=vide,
+## PGHOST=/var/run/postgresql pour l'authentification peer.
 
 psql -d finance_db -f sql/10_schema.sql
 python -m finance_tracker.etl
@@ -129,9 +145,9 @@ Le dashboard s'importe ensuite dans Grafana :
 
 ---
 
-## Déploiement Raspberry Pi
+### Déploiement Raspberry Pi
 
-### 1. Créer la base `finance_db`
+#### 1. Créer la base `finance_db`
 
 La commande idempotente fournie par le dépôt :
 
@@ -151,7 +167,7 @@ Ou, si `make` est disponible :
 sudo -u postgres make db-create
 ```
 
-### 2. Créer le rôle et le schéma
+#### 2. Créer le rôle et le schéma
 
 ```bash
 psql -U postgres -d postgres \
@@ -165,7 +181,7 @@ PUBLIC et accorde la lecture à `grafana` si le rôle existe. Il crée aussi la
 base si elle n'existe pas déjà : l'étape 1 est surtout là pour disposer d'une
 commande explicite et vérifiable.
 
-### 3. Configurer l'environnement
+#### 3. Configurer l'environnement
 
 ```dotenv
 PGHOST=localhost
@@ -178,14 +194,14 @@ FINANCE_START_DATE=2015-01-01
 FINANCE_MIN_IMPORT_INTERVAL_HOURS=18
 ```
 
-### 4. Lancer le backfill
+#### 4. Lancer le backfill
 
 ```bash
 . .venv/bin/activate
 python -m finance_tracker.etl
 ```
 
-### 5. Jenkins
+#### 5. Jenkins
 
 - Job **Pipeline script from SCM**, branche `main`, script `Jenkinsfile`.
 - Credential **Secret text** `pg-password-finance`.
@@ -196,13 +212,14 @@ Voir [`docs/RUNBOOK.md`](docs/RUNBOOK.md) pour le détail.
 
 ---
 
-## Structure du dépôt
+### Structure du dépôt
 
 ```
 Finance_tracker/
 ├── README.md
 ├── Jenkinsfile
 ├── requirements.txt
+├── requirements-dev.txt            # pytest
 ├── requirements-optional.txt       # ruptures (PELT/Binseg)
 ├── Makefile                        # db-create, db-bootstrap, etl, tests…
 ├── .env.example
@@ -238,7 +255,7 @@ Finance_tracker/
 
 ---
 
-## Modèle de données
+### Modèle de données
 
 | Objet | Rôle |
 |---|---|
@@ -271,7 +288,7 @@ pivoter nativement une matrice catégorielle. Voir
 
 ---
 
-## Analyses et méthode
+### Analyses et méthode
 
 Le détail des formules, des choix d'alignement et des limites est dans
 [`docs/METHODOLOGIE.md`](docs/METHODOLOGIE.md). Points clés :
@@ -288,7 +305,7 @@ Le détail des formules, des choix d'alignement et des limites est dans
 
 ---
 
-## Performance et choix d'insertion
+### Performance et choix d'insertion
 
 - Parsing JSON direct, sans pandas/yfinance.
 - Déduplication par date, fuseau de la place.
@@ -303,19 +320,21 @@ dans [`docs/OPTIMISATIONS.md`](docs/OPTIMISATIONS.md).
 
 ---
 
-## Tests
+### Tests
 
 ```bash
-python -m unittest discover -s tests -v
+python -m pytest -q tests
 ```
 
-Les tests sont hors-ligne : parsing Yahoo sur fixture, clustering, ruptures,
-contrat du schéma. Le contrôle de fraîcheur et les requêtes SQL du dashboard
-sont testés manuellement / via Jenkins.
+La suite couvre les deux projets : 16 tests Finance Tracker (parsing Yahoo,
+clustering, ruptures, contrat du schéma) et 33 tests SMA92 (Black-Scholes,
+Monte Carlo, client Saxo, CLI). Elle est hors-ligne : aucune requête réseau ni
+accès PostgreSQL n'est nécessaire. Le contrôle de fraîcheur et les requêtes SQL
+du dashboard sont testés via Jenkins et manuellement.
 
 ---
 
-## Sécurité
+### Sécurité
 
 - Rôle `finance` propriétaire du schéma, sans SUPERUSER/CREATEDB/CREATEROLE.
 - Rôle `grafana` en lecture seule.
@@ -326,7 +345,7 @@ sont testés manuellement / via Jenkins.
 
 ---
 
-## Limites
+### Limites
 
 - Yahoo Finance est une source non officielle, révisable et limitée en débit.
 - Les ETF SPDR sont américains : une action européenne peut avoir une
@@ -339,7 +358,7 @@ Voir [`docs/METHODOLOGIE.md`](docs/METHODOLOGIE.md) §10 pour la liste complète
 
 ---
 
-## Documents
+### Documents
 
 - [`docs/PLAN.md`](docs/PLAN.md) — plan initial et décisions d'architecture.
 - [`docs/METHODOLOGIE.md`](docs/METHODOLOGIE.md) — formules et logique des analyses.
@@ -348,6 +367,21 @@ Voir [`docs/METHODOLOGIE.md`](docs/METHODOLOGIE.md) §10 pour la liste complète
 - [`grafana/grafana_setup.md`](grafana/grafana_setup.md) — datasource et dashboard.
 - [`grafana/ALERTES.md`](grafana/ALERTES.md) — règles d'alerte.
 
-## Licence
+### Licence
 
 À définir.
+
+---
+
+## SMA92 Options Lab
+
+Le laboratoire SMA92 (Monte Carlo, options Saxo SIM, rapports) est documenté
+intégralement dans [`README_SMA92.md`](README_SMA92.md). Il utilise :
+
+- `numpy` et `requests` ;
+- le paquet `src/sma92/` ;
+- les tests `tests/test_analysis.py`, `test_black_scholes.py`, `test_cli.py`,
+  `test_market_data.py`, `test_saxo.py`, `test_simulation.py`.
+
+Ses commandes ne dépendent pas de PostgreSQL et peuvent être lancées sans
+Jenkins ni Grafana.

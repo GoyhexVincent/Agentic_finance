@@ -52,7 +52,7 @@ pipeline {
                     python3 -m venv .venv
                     . .venv/bin/activate
                     pip install --upgrade pip
-                    pip install -r requirements.txt
+                    pip install -r requirements.txt -r requirements-dev.txt
                 """
             }
         }
@@ -61,7 +61,7 @@ pipeline {
             steps {
                 sh """
                     . .venv/bin/activate
-                    python -m unittest discover -s tests -v
+                    python -m pytest -q tests
                 """
             }
         }

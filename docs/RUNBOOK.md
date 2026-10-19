@@ -26,6 +26,7 @@ cd Finance_tracker
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -r requirements.txt
+pip install -r requirements-dev.txt
 
 # Créer la base locale, possédée par le rôle de développement
 sudo -u postgres bash scripts/create_database.sh finance_db "$USER"
@@ -159,7 +160,7 @@ python -m finance_tracker.analytics
 python scripts/verify_freshness.py
 
 # Tests hors-ligne
-python -m unittest discover -s tests -v
+python -m pytest -q tests
 
 # Régénérer le dashboard Grafana
 python scripts/build_dashboard.py

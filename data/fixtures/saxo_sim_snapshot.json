@@ -1,0 +1,1182 @@
+{
+  "fixture_version": 1,
+  "synthetic": true,
+  "environment": "sim",
+  "source": "Fixture synthétique inspirée de S92.XETR — aucune donnée Saxo réelle",
+  "as_of": "2026-10-19T15:30:00Z",
+  "underlying": {
+    "uic": 1234567,
+    "symbol": "S92",
+    "description": "SMA Solar Technology AG",
+    "currency": "EUR",
+    "exchange_id": "XETR",
+    "spot": 55.7
+  },
+  "root_id": 98765,
+  "underlying_history": [
+    {
+      "date": "2026-08-21",
+      "open": 56.8,
+      "high": 57.8224,
+      "low": 55.7776,
+      "close": 56.8,
+      "volume": 35000
+    },
+    {
+      "date": "2026-08-24",
+      "open": 56.8,
+      "high": 57.8224,
+      "low": 53.7645,
+      "close": 54.75,
+      "volume": 42919
+    },
+    {
+      "date": "2026-08-25",
+      "open": 54.75,
+      "high": 56.6517,
+      "low": 53.7645,
+      "close": 55.65,
+      "volume": 50838
+    },
+    {
+      "date": "2026-08-26",
+      "open": 55.65,
+      "high": 56.6517,
+      "low": 53.7154,
+      "close": 54.7,
+      "volume": 58757
+    },
+    {
+      "date": "2026-08-27",
+      "open": 54.7,
+      "high": 57.008,
+      "low": 53.7154,
+      "close": 56.0,
+      "volume": 66676
+    },
+    {
+      "date": "2026-08-28",
+      "open": 56.0,
+      "high": 58.2805,
+      "low": 54.992,
+      "close": 57.25,
+      "volume": 74595
+    },
+    {
+      "date": "2026-08-31",
+      "open": 57.25,
+      "high": 60.3674,
+      "low": 56.2195,
+      "close": 59.3,
+      "volume": 82514
+    },
+    {
+      "date": "2026-09-01",
+      "open": 59.3,
+      "high": 60.3674,
+      "low": 56.6614,
+      "close": 57.7,
+      "volume": 90433
+    },
+    {
+      "date": "2026-09-02",
+      "open": 57.7,
+      "high": 58.7386,
+      "low": 55.1393,
+      "close": 56.15,
+      "volume": 98352
+    },
+    {
+      "date": "2026-09-03",
+      "open": 56.15,
+      "high": 58.3823,
+      "low": 55.1393,
+      "close": 57.35,
+      "volume": 106271
+    },
+    {
+      "date": "2026-09-04",
+      "open": 57.35,
+      "high": 58.3823,
+      "low": 55.6303,
+      "close": 56.65,
+      "volume": 114190
+    },
+    {
+      "date": "2026-09-07",
+      "open": 56.65,
+      "high": 60.9782,
+      "low": 55.6303,
+      "close": 59.9,
+      "volume": 122109
+    },
+    {
+      "date": "2026-09-08",
+      "open": 59.9,
+      "high": 64.7448,
+      "low": 58.8218,
+      "close": 63.6,
+      "volume": 40028
+    },
+    {
+      "date": "2026-09-09",
+      "open": 63.6,
+      "high": 64.7448,
+      "low": 60.6385,
+      "close": 61.75,
+      "volume": 47947
+    },
+    {
+      "date": "2026-09-10",
+      "open": 61.75,
+      "high": 62.8615,
+      "low": 58.2817,
+      "close": 59.35,
+      "volume": 55866
+    },
+    {
+      "date": "2026-09-11",
+      "open": 59.35,
+      "high": 60.4183,
+      "low": 57.8398,
+      "close": 58.9,
+      "volume": 63785
+    },
+    {
+      "date": "2026-09-14",
+      "open": 58.9,
+      "high": 59.9602,
+      "low": 56.6123,
+      "close": 57.65,
+      "volume": 71704
+    },
+    {
+      "date": "2026-09-15",
+      "open": 57.65,
+      "high": 58.6877,
+      "low": 54.8447,
+      "close": 55.85,
+      "volume": 79623
+    },
+    {
+      "date": "2026-09-16",
+      "open": 55.85,
+      "high": 56.8553,
+      "low": 54.3046,
+      "close": 55.3,
+      "volume": 87542
+    },
+    {
+      "date": "2026-09-17",
+      "open": 55.3,
+      "high": 57.517,
+      "low": 54.3046,
+      "close": 56.5,
+      "volume": 95461
+    },
+    {
+      "date": "2026-09-18",
+      "open": 56.5,
+      "high": 57.8224,
+      "low": 55.483,
+      "close": 56.8,
+      "volume": 103380
+    },
+    {
+      "date": "2026-09-21",
+      "open": 56.8,
+      "high": 59.6039,
+      "low": 55.7776,
+      "close": 58.55,
+      "volume": 111299
+    },
+    {
+      "date": "2026-09-22",
+      "open": 58.55,
+      "high": 63.116,
+      "low": 57.4961,
+      "close": 62.0,
+      "volume": 119218
+    },
+    {
+      "date": "2026-09-23",
+      "open": 62.0,
+      "high": 63.116,
+      "low": 57.3979,
+      "close": 58.45,
+      "volume": 37137
+    },
+    {
+      "date": "2026-09-24",
+      "open": 58.45,
+      "high": 59.5021,
+      "low": 54.8447,
+      "close": 55.85,
+      "volume": 45056
+    },
+    {
+      "date": "2026-09-25",
+      "open": 55.85,
+      "high": 57.4661,
+      "low": 54.8447,
+      "close": 56.45,
+      "volume": 52975
+    },
+    {
+      "date": "2026-09-28",
+      "open": 56.45,
+      "high": 57.4661,
+      "low": 54.8447,
+      "close": 55.85,
+      "volume": 60894
+    },
+    {
+      "date": "2026-09-29",
+      "open": 55.85,
+      "high": 58.8404,
+      "low": 54.8447,
+      "close": 57.8,
+      "volume": 68813
+    },
+    {
+      "date": "2026-09-30",
+      "open": 57.8,
+      "high": 61.0291,
+      "low": 56.7596,
+      "close": 59.95,
+      "volume": 76732
+    },
+    {
+      "date": "2026-10-01",
+      "open": 59.95,
+      "high": 61.0291,
+      "low": 57.9871,
+      "close": 59.05,
+      "volume": 84651
+    },
+    {
+      "date": "2026-10-02",
+      "open": 59.05,
+      "high": 62.2507,
+      "low": 57.9871,
+      "close": 61.15,
+      "volume": 92570
+    },
+    {
+      "date": "2026-10-05",
+      "open": 61.15,
+      "high": 62.2507,
+      "low": 58.7236,
+      "close": 59.8,
+      "volume": 100489
+    },
+    {
+      "date": "2026-10-06",
+      "open": 59.8,
+      "high": 61.589,
+      "low": 58.7236,
+      "close": 60.5,
+      "volume": 108408
+    },
+    {
+      "date": "2026-10-07",
+      "open": 60.5,
+      "high": 61.589,
+      "low": 57.7416,
+      "close": 58.8,
+      "volume": 116327
+    },
+    {
+      "date": "2026-10-08",
+      "open": 58.8,
+      "high": 59.8584,
+      "low": 56.9069,
+      "close": 57.95,
+      "volume": 124246
+    },
+    {
+      "date": "2026-10-09",
+      "open": 57.95,
+      "high": 59.9602,
+      "low": 56.9069,
+      "close": 58.9,
+      "volume": 42165
+    },
+    {
+      "date": "2026-10-12",
+      "open": 58.9,
+      "high": 60.8764,
+      "low": 57.8398,
+      "close": 59.8,
+      "volume": 50084
+    },
+    {
+      "date": "2026-10-13",
+      "open": 59.8,
+      "high": 63.6759,
+      "low": 58.7236,
+      "close": 62.55,
+      "volume": 58003
+    },
+    {
+      "date": "2026-10-14",
+      "open": 62.55,
+      "high": 63.6759,
+      "low": 59.4601,
+      "close": 60.55,
+      "volume": 65922
+    },
+    {
+      "date": "2026-10-15",
+      "open": 60.55,
+      "high": 61.6399,
+      "low": 55.8267,
+      "close": 56.85,
+      "volume": 73841
+    },
+    {
+      "date": "2026-10-16",
+      "open": 56.85,
+      "high": 58.6877,
+      "low": 55.8267,
+      "close": 57.65,
+      "volume": 81760
+    },
+    {
+      "date": "2026-10-19",
+      "open": 57.65,
+      "high": 58.6877,
+      "low": 54.6974,
+      "close": 55.7,
+      "volume": 89679
+    }
+  ],
+  "contracts": [
+    {
+      "uic": 200001,
+      "expiry": "2026-11-20",
+      "strike": 45.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 11.36,
+      "ask": 11.52,
+      "mid": 11.44,
+      "last": 11.44,
+      "volume": 15,
+      "open_interest": 242,
+      "delta": 0.8854,
+      "gamma": 0.01786,
+      "vega": 0.0319,
+      "theta": -0.0349,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200003,
+      "expiry": "2026-11-20",
+      "strike": 45.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 0.64,
+      "ask": 0.68,
+      "mid": 0.66,
+      "last": 0.66,
+      "volume": 41,
+      "open_interest": 316,
+      "delta": -0.1146,
+      "gamma": 0.01786,
+      "vega": 0.0319,
+      "theta": -0.0324,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200005,
+      "expiry": "2026-11-20",
+      "strike": 50.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 7.11,
+      "ask": 7.27,
+      "mid": 7.19,
+      "last": 7.19,
+      "volume": 67,
+      "open_interest": 390,
+      "delta": 0.7672,
+      "gamma": 0.03224,
+      "vega": 0.0504,
+      "theta": -0.0472,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200007,
+      "expiry": "2026-11-20",
+      "strike": 50.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 1.37,
+      "ask": 1.44,
+      "mid": 1.41,
+      "last": 1.41,
+      "volume": 13,
+      "open_interest": 464,
+      "delta": -0.2328,
+      "gamma": 0.03224,
+      "vega": 0.0504,
+      "theta": -0.0445,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200009,
+      "expiry": "2026-11-20",
+      "strike": 55.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 3.79,
+      "ask": 3.95,
+      "mid": 3.87,
+      "last": 3.87,
+      "volume": 39,
+      "open_interest": 538,
+      "delta": 0.5676,
+      "gamma": 0.04507,
+      "vega": 0.0648,
+      "theta": -0.0551,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200011,
+      "expiry": "2026-11-20",
+      "strike": 55.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 2.99,
+      "ask": 3.15,
+      "mid": 3.07,
+      "last": 3.07,
+      "volume": 65,
+      "open_interest": 612,
+      "delta": -0.4324,
+      "gamma": 0.04507,
+      "vega": 0.0648,
+      "theta": -0.0521,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200013,
+      "expiry": "2026-11-20",
+      "strike": 60.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 1.74,
+      "ask": 1.83,
+      "mid": 1.79,
+      "last": 1.79,
+      "volume": 11,
+      "open_interest": 686,
+      "delta": 0.343,
+      "gamma": 0.04362,
+      "vega": 0.0606,
+      "theta": -0.0494,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200015,
+      "expiry": "2026-11-20",
+      "strike": 60.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 5.9,
+      "ask": 6.06,
+      "mid": 5.98,
+      "last": 5.98,
+      "volume": 37,
+      "open_interest": 760,
+      "delta": -0.657,
+      "gamma": 0.04362,
+      "vega": 0.0606,
+      "theta": -0.0461,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200017,
+      "expiry": "2026-11-20",
+      "strike": 65.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 0.74,
+      "ask": 0.78,
+      "mid": 0.76,
+      "last": 0.76,
+      "volume": 0,
+      "open_interest": 834,
+      "delta": 0.1772,
+      "gamma": 0.03063,
+      "vega": 0.0429,
+      "theta": -0.0349,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200019,
+      "expiry": "2026-11-20",
+      "strike": 65.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 9.86,
+      "ask": 10.02,
+      "mid": 9.94,
+      "last": 9.94,
+      "volume": 9,
+      "open_interest": 8,
+      "delta": -0.8228,
+      "gamma": 0.03063,
+      "vega": 0.0429,
+      "theta": -0.0314,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200021,
+      "expiry": "2026-12-18",
+      "strike": 45.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 12.21,
+      "ask": 12.37,
+      "mid": 12.29,
+      "last": 12.29,
+      "volume": 35,
+      "open_interest": 82,
+      "delta": 0.8334,
+      "gamma": 0.01736,
+      "vega": 0.0564,
+      "theta": -0.0318,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200023,
+      "expiry": "2026-12-18",
+      "strike": 45.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 1.41,
+      "ask": 1.48,
+      "mid": 1.44,
+      "last": 1.44,
+      "volume": 61,
+      "open_interest": 156,
+      "delta": -0.1666,
+      "gamma": 0.01736,
+      "vega": 0.0564,
+      "theta": -0.0294,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200025,
+      "expiry": "2026-12-18",
+      "strike": 50.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 8.14,
+      "ask": 8.3,
+      "mid": 8.22,
+      "last": 8.22,
+      "volume": 7,
+      "open_interest": 230,
+      "delta": 0.7281,
+      "gamma": 0.02648,
+      "vega": 0.0749,
+      "theta": -0.0364,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200027,
+      "expiry": "2026-12-18",
+      "strike": 50.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 2.3,
+      "ask": 2.42,
+      "mid": 2.36,
+      "last": 2.36,
+      "volume": 33,
+      "open_interest": 304,
+      "delta": -0.2719,
+      "gamma": 0.02648,
+      "vega": 0.0749,
+      "theta": -0.0337,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200029,
+      "expiry": "2026-12-18",
+      "strike": 55.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 4.92,
+      "ask": 5.08,
+      "mid": 5.0,
+      "last": 5.0,
+      "volume": 59,
+      "open_interest": 378,
+      "delta": 0.5716,
+      "gamma": 0.03414,
+      "vega": 0.0886,
+      "theta": -0.0391,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200031,
+      "expiry": "2026-12-18",
+      "strike": 55.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 4.03,
+      "ask": 4.19,
+      "mid": 4.11,
+      "last": 4.11,
+      "volume": 5,
+      "open_interest": 452,
+      "delta": -0.4284,
+      "gamma": 0.03414,
+      "vega": 0.0886,
+      "theta": -0.0361,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200033,
+      "expiry": "2026-12-18",
+      "strike": 60.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 2.74,
+      "ask": 2.89,
+      "mid": 2.82,
+      "last": 2.82,
+      "volume": 31,
+      "open_interest": 526,
+      "delta": 0.3984,
+      "gamma": 0.03481,
+      "vega": 0.0872,
+      "theta": -0.0367,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200035,
+      "expiry": "2026-12-18",
+      "strike": 60.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 6.84,
+      "ask": 7.0,
+      "mid": 6.92,
+      "last": 6.92,
+      "volume": 57,
+      "open_interest": 600,
+      "delta": -0.6016,
+      "gamma": 0.03481,
+      "vega": 0.0872,
+      "theta": -0.0334,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200037,
+      "expiry": "2026-12-18",
+      "strike": 65.0,
+      "kind": "call",
+      "contract_size": 100.0,
+      "bid": 1.53,
+      "ask": 1.6,
+      "mid": 1.56,
+      "last": 1.56,
+      "volume": 0,
+      "open_interest": 674,
+      "delta": 0.2567,
+      "gamma": 0.02886,
+      "vega": 0.0728,
+      "theta": -0.0307,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    },
+    {
+      "uic": 200039,
+      "expiry": "2026-12-18",
+      "strike": 65.0,
+      "kind": "put",
+      "contract_size": 100.0,
+      "bid": 10.57,
+      "ask": 10.73,
+      "mid": 10.65,
+      "last": 10.65,
+      "volume": 29,
+      "open_interest": 748,
+      "delta": -0.7433,
+      "gamma": 0.02886,
+      "vega": 0.0728,
+      "theta": -0.0271,
+      "quote_time": "2026-10-19T15:30:00Z",
+      "price_type_bid": "Indicative",
+      "price_type_ask": "Indicative"
+    }
+  ],
+  "option_history": {
+    "200001": [
+      {
+        "date": "2026-10-13",
+        "open": 17.57,
+        "high": 18.55,
+        "low": 17.13,
+        "close": 17.84,
+        "volume": 1
+      },
+      {
+        "date": "2026-10-14",
+        "open": 15.68,
+        "high": 16.56,
+        "low": 15.28,
+        "close": 15.92,
+        "volume": 4
+      },
+      {
+        "date": "2026-10-15",
+        "open": 12.32,
+        "high": 13.01,
+        "low": 12.01,
+        "close": 12.51,
+        "volume": 7
+      },
+      {
+        "date": "2026-10-16",
+        "open": 13.06,
+        "high": 13.79,
+        "low": 12.73,
+        "close": 13.26,
+        "volume": 10
+      },
+      {
+        "date": "2026-10-19",
+        "open": 11.26,
+        "high": 11.89,
+        "low": 10.97,
+        "close": 11.43,
+        "volume": 13
+      }
+    ],
+    "200003": [
+      {
+        "date": "2026-10-13",
+        "open": 0.18,
+        "high": 0.19,
+        "low": 0.17,
+        "close": 0.18,
+        "volume": 8
+      },
+      {
+        "date": "2026-10-14",
+        "open": 0.28,
+        "high": 0.29,
+        "low": 0.27,
+        "close": 0.28,
+        "volume": 11
+      },
+      {
+        "date": "2026-10-15",
+        "open": 0.58,
+        "high": 0.61,
+        "low": 0.57,
+        "close": 0.59,
+        "volume": 14
+      },
+      {
+        "date": "2026-10-16",
+        "open": 0.49,
+        "high": 0.52,
+        "low": 0.48,
+        "close": 0.5,
+        "volume": 17
+      },
+      {
+        "date": "2026-10-19",
+        "open": 0.64,
+        "high": 0.68,
+        "low": 0.62,
+        "close": 0.65,
+        "volume": 20
+      }
+    ],
+    "200005": [
+      {
+        "date": "2026-10-13",
+        "open": 12.84,
+        "high": 13.56,
+        "low": 12.52,
+        "close": 13.04,
+        "volume": 15
+      },
+      {
+        "date": "2026-10-14",
+        "open": 11.09,
+        "high": 11.71,
+        "low": 10.81,
+        "close": 11.26,
+        "volume": 18
+      },
+      {
+        "date": "2026-10-15",
+        "open": 8.02,
+        "high": 8.47,
+        "low": 7.81,
+        "close": 8.14,
+        "volume": 21
+      },
+      {
+        "date": "2026-10-16",
+        "open": 8.67,
+        "high": 9.15,
+        "low": 8.45,
+        "close": 8.8,
+        "volume": 24
+      },
+      {
+        "date": "2026-10-19",
+        "open": 7.09,
+        "high": 7.49,
+        "low": 6.91,
+        "close": 7.2,
+        "volume": 27
+      }
+    ],
+    "200007": [
+      {
+        "date": "2026-10-13",
+        "open": 0.39,
+        "high": 0.42,
+        "low": 0.38,
+        "close": 0.4,
+        "volume": 22
+      },
+      {
+        "date": "2026-10-14",
+        "open": 0.58,
+        "high": 0.61,
+        "low": 0.57,
+        "close": 0.59,
+        "volume": 25
+      },
+      {
+        "date": "2026-10-15",
+        "open": 1.17,
+        "high": 1.24,
+        "low": 1.14,
+        "close": 1.19,
+        "volume": 28
+      },
+      {
+        "date": "2026-10-16",
+        "open": 1.05,
+        "high": 1.11,
+        "low": 1.03,
+        "close": 1.07,
+        "volume": 31
+      },
+      {
+        "date": "2026-10-19",
+        "open": 1.38,
+        "high": 1.46,
+        "low": 1.34,
+        "close": 1.4,
+        "volume": 34
+      }
+    ],
+    "200009": [
+      {
+        "date": "2026-10-13",
+        "open": 8.52,
+        "high": 9.0,
+        "low": 8.3,
+        "close": 8.65,
+        "volume": 29
+      },
+      {
+        "date": "2026-10-14",
+        "open": 6.99,
+        "high": 7.38,
+        "low": 6.82,
+        "close": 7.1,
+        "volume": 32
+      },
+      {
+        "date": "2026-10-15",
+        "open": 4.53,
+        "high": 4.78,
+        "low": 4.42,
+        "close": 4.6,
+        "volume": 35
+      },
+      {
+        "date": "2026-10-16",
+        "open": 5.04,
+        "high": 5.32,
+        "low": 4.92,
+        "close": 5.12,
+        "volume": 38
+      },
+      {
+        "date": "2026-10-19",
+        "open": 3.8,
+        "high": 4.01,
+        "low": 3.71,
+        "close": 3.86,
+        "volume": 1
+      }
+    ],
+    "200011": [
+      {
+        "date": "2026-10-13",
+        "open": 0.97,
+        "high": 1.02,
+        "low": 0.94,
+        "close": 0.98,
+        "volume": 36
+      },
+      {
+        "date": "2026-10-14",
+        "open": 1.43,
+        "high": 1.51,
+        "low": 1.39,
+        "close": 1.45,
+        "volume": 39
+      },
+      {
+        "date": "2026-10-15",
+        "open": 2.59,
+        "high": 2.74,
+        "low": 2.52,
+        "close": 2.63,
+        "volume": 2
+      },
+      {
+        "date": "2026-10-16",
+        "open": 2.32,
+        "high": 2.45,
+        "low": 2.27,
+        "close": 2.36,
+        "volume": 5
+      },
+      {
+        "date": "2026-10-19",
+        "open": 3.03,
+        "high": 3.2,
+        "low": 2.96,
+        "close": 3.08,
+        "volume": 8
+      }
+    ],
+    "200013": [
+      {
+        "date": "2026-10-13",
+        "open": 5.03,
+        "high": 5.31,
+        "low": 4.91,
+        "close": 5.11,
+        "volume": 3
+      },
+      {
+        "date": "2026-10-14",
+        "open": 3.88,
+        "high": 4.1,
+        "low": 3.78,
+        "close": 3.94,
+        "volume": 6
+      },
+      {
+        "date": "2026-10-15",
+        "open": 2.2,
+        "high": 2.32,
+        "low": 2.14,
+        "close": 2.23,
+        "volume": 9
+      },
+      {
+        "date": "2026-10-16",
+        "open": 2.57,
+        "high": 2.71,
+        "low": 2.51,
+        "close": 2.61,
+        "volume": 12
+      },
+      {
+        "date": "2026-10-19",
+        "open": 1.75,
+        "high": 1.85,
+        "low": 1.71,
+        "close": 1.78,
+        "volume": 15
+      }
+    ],
+    "200015": [
+      {
+        "date": "2026-10-13",
+        "open": 2.38,
+        "high": 2.52,
+        "low": 2.32,
+        "close": 2.42,
+        "volume": 10
+      },
+      {
+        "date": "2026-10-14",
+        "open": 3.22,
+        "high": 3.4,
+        "low": 3.14,
+        "close": 3.27,
+        "volume": 13
+      },
+      {
+        "date": "2026-10-15",
+        "open": 5.2,
+        "high": 5.49,
+        "low": 5.07,
+        "close": 5.28,
+        "volume": 16
+      },
+      {
+        "date": "2026-10-16",
+        "open": 4.76,
+        "high": 5.02,
+        "low": 4.64,
+        "close": 4.83,
+        "volume": 19
+      },
+      {
+        "date": "2026-10-19",
+        "open": 5.88,
+        "high": 6.21,
+        "low": 5.73,
+        "close": 5.97,
+        "volume": 22
+      }
+    ],
+    "200017": [
+      {
+        "date": "2026-10-13",
+        "open": 2.69,
+        "high": 2.84,
+        "low": 2.62,
+        "close": 2.73,
+        "volume": 17
+      },
+      {
+        "date": "2026-10-14",
+        "open": 1.99,
+        "high": 2.1,
+        "low": 1.94,
+        "close": 2.02,
+        "volume": 20
+      },
+      {
+        "date": "2026-10-15",
+        "open": 0.98,
+        "high": 1.04,
+        "low": 0.96,
+        "close": 1.0,
+        "volume": 23
+      },
+      {
+        "date": "2026-10-16",
+        "open": 1.19,
+        "high": 1.26,
+        "low": 1.16,
+        "close": 1.21,
+        "volume": 26
+      },
+      {
+        "date": "2026-10-19",
+        "open": 0.76,
+        "high": 0.8,
+        "low": 0.74,
+        "close": 0.77,
+        "volume": 29
+      }
+    ],
+    "200019": [
+      {
+        "date": "2026-10-13",
+        "open": 4.98,
+        "high": 5.26,
+        "low": 4.86,
+        "close": 5.06,
+        "volume": 24
+      },
+      {
+        "date": "2026-10-14",
+        "open": 6.23,
+        "high": 6.57,
+        "low": 6.07,
+        "close": 6.32,
+        "volume": 27
+      },
+      {
+        "date": "2026-10-15",
+        "open": 8.89,
+        "high": 9.39,
+        "low": 8.67,
+        "close": 9.03,
+        "volume": 30
+      },
+      {
+        "date": "2026-10-16",
+        "open": 8.32,
+        "high": 8.79,
+        "low": 8.11,
+        "close": 8.45,
+        "volume": 33
+      },
+      {
+        "date": "2026-10-19",
+        "open": 9.79,
+        "high": 10.34,
+        "low": 9.54,
+        "close": 9.94,
+        "volume": 36
+      }
+    ]
+  },
+  "warnings": [
+    "Fixture synthétique : les prix, volumes et grecques sont fabriqués pour tester le pipeline.",
+    "Ne pas interpréter les signaux de ce run comme une lecture du marché réel."
+  ]
+}
