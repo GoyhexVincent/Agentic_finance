@@ -1,0 +1,26 @@
+# Provider de dashboards du Finance Tracker.
+#
+# Grafana relit le dossier toutes les 30 s : un JSON mis à jour par
+# `make dashboard` apparaît sans redémarrage.
+#
+# GF_FINANCE_DASHBOARDS_PATH pointe vers le dossier contenant
+# dashboard_finance.json :
+#   - production : /var/lib/grafana/dashboards
+#   - test local : <dépôt>/grafana
+#
+# Le dossier « Finance » est créé automatiquement dans Grafana.
+
+apiVersion: 1
+
+providers:
+  - name: finance
+    orgId: 1
+    folder: Finance
+    folderUid: finance
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: "${GF_FINANCE_DASHBOARDS_PATH}"
+      foldersFromFilesStructure: false

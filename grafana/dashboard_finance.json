@@ -39,7 +39,7 @@
         "target": {
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT b.break_date::timestamptz AS time, a.ticker || ' — rupture ' || b.method AS text, 'break' AS tags FROM finance.correlation_breaks b JOIN finance.assets a USING (asset_id) WHERE $__timeFilter(b.break_date) ORDER BY b.break_date;",
+          "rawSql": "SELECT b.break_date::timestamptz AS time, CASE a.ticker WHEN 'XLK' THEN 'XLK — Technologie' WHEN 'XLV' THEN 'XLV — Santé' WHEN 'XLF' THEN 'XLF — Secteur financier' WHEN 'XLY' THEN 'XLY — Conso. discrétionnaire' WHEN 'XLC' THEN 'XLC — Services de communication' WHEN 'XLI' THEN 'XLI — Industrie' WHEN 'XLP' THEN 'XLP — Consommation de base' WHEN 'XLE' THEN 'XLE — Énergie' WHEN 'XLU' THEN 'XLU — Services publics' WHEN 'XLRE' THEN 'XLRE — Immobilier' WHEN 'XLB' THEN 'XLB — Matériaux' WHEN 'URTH' THEN 'URTH — MSCI World (marché large)' WHEN 'BTC' THEN 'BTC — Bitcoin' WHEN 'GLD' THEN 'GLD — Or' WHEN 'TLT' THEN 'TLT — Obligations 20 ans' ELSE a.ticker END || ' — rupture ' || b.method AS text, 'break' AS tags FROM finance.correlation_breaks b JOIN finance.assets a USING (asset_id) WHERE $__timeFilter(b.break_date) ORDER BY b.break_date;",
           "refId": "Anno"
         }
       }
@@ -67,7 +67,7 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT max(last_trade_date)::text AS \"Dernière séance\" FROM finance.v_freshness;",
+          "rawSql": "SELECT EXTRACT(EPOCH FROM max(last_trade_date)) * 1000 AS \"Dernière séance\" FROM finance.v_freshness;",
           "refId": "A"
         }
       ],
@@ -97,7 +97,7 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "time:YYYY-MM-DD"
         },
         "overrides": []
       },
@@ -173,7 +173,7 @@
       "targets": [
         {
           "format": "table",
-          "rawSql": "SELECT to_char(max(finished_at), 'YYYY-MM-DD HH24:MI') AS \"Dernier import\" FROM finance.ingestion_runs WHERE status IN ('success', 'partial');",
+          "rawSql": "SELECT EXTRACT(EPOCH FROM max(finished_at)) * 1000 AS \"Dernier import\" FROM finance.ingestion_runs WHERE status IN ('success', 'partial');",
           "refId": "A"
         }
       ],
@@ -203,7 +203,7 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "time:YYYY-MM-DD HH:mm:ss"
         },
         "overrides": []
       },
@@ -297,7 +297,8 @@
           "custom": {
             "align": "center",
             "displayMode": "color-background",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none",
@@ -341,10 +342,211 @@
           "min": -1,
           "max": 1
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 300
+              },
+              {
+                "id": "custom.wrapText",
+                "value": true
+              }
+            ]
+          }
+        ]
       },
-      "transformations": [],
-      "description": "Corrélation de Pearson des rendements logarithmiques, en EUR par défaut. Chaque cellule est calculée sur les dates communes aux deux actifs ; les paires sans assez d'observations restent vides. L'ordre des lignes/colonnes suit le clustering hiérarchique."
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLK$",
+            "renamePattern": "XLK — Technologie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLV$",
+            "renamePattern": "XLV — Santé"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLF$",
+            "renamePattern": "XLF — Secteur financier"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLY$",
+            "renamePattern": "XLY — Conso. discrétionnaire"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLC$",
+            "renamePattern": "XLC — Services de communication"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLI$",
+            "renamePattern": "XLI — Industrie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLP$",
+            "renamePattern": "XLP — Consommation de base"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLE$",
+            "renamePattern": "XLE — Énergie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLU$",
+            "renamePattern": "XLU — Services publics"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLRE$",
+            "renamePattern": "XLRE — Immobilier"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLB$",
+            "renamePattern": "XLB — Matériaux"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^URTH$",
+            "renamePattern": "URTH — MSCI World (marché large)"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^BTC$",
+            "renamePattern": "BTC — Bitcoin"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^GLD$",
+            "renamePattern": "GLD — Or"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^TLT$",
+            "renamePattern": "TLT — Obligations 20 ans"
+          }
+        }
+      ],
+      "description": "Corrélation de Pearson des rendements logarithmiques, en EUR par défaut. Chaque cellule est calculée sur les dates communes aux deux actifs ; les paires sans assez d'observations restent vides. Les lignes et les colonnes combinent le ticker et sa classe d'actif (ex. « XLK — Technologie »)."
     },
     {
       "id": 6,
@@ -352,7 +554,7 @@
       "type": "bargauge",
       "gridPos": {
         "h": 12,
-        "w": 8,
+        "w": 9,
         "x": 0,
         "y": 20
       },
@@ -430,7 +632,141 @@
         },
         "overrides": []
       },
-      "description": "Classement des actifs par corrélation avec le MSCI World. La corrélation est une mesure de co-mouvement, pas de performance."
+      "transformations": [
+        {
+          "id": "rowsToFields",
+          "options": {
+            "mappings": [
+              {
+                "fieldName": "asset",
+                "handlerKey": "field.name"
+              },
+              {
+                "fieldName": "correlation",
+                "handlerKey": "field.value"
+              },
+              {
+                "fieldName": "n_obs",
+                "handlerKey": "__ignore"
+              },
+              {
+                "fieldName": "ci_low",
+                "handlerKey": "__ignore"
+              },
+              {
+                "fieldName": "ci_high",
+                "handlerKey": "__ignore"
+              }
+            ]
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLK$",
+            "renamePattern": "XLK — Technologie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLV$",
+            "renamePattern": "XLV — Santé"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLF$",
+            "renamePattern": "XLF — Secteur financier"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLY$",
+            "renamePattern": "XLY — Conso. discrétionnaire"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLC$",
+            "renamePattern": "XLC — Services de communication"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLI$",
+            "renamePattern": "XLI — Industrie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLP$",
+            "renamePattern": "XLP — Consommation de base"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLE$",
+            "renamePattern": "XLE — Énergie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLU$",
+            "renamePattern": "XLU — Services publics"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLRE$",
+            "renamePattern": "XLRE — Immobilier"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLB$",
+            "renamePattern": "XLB — Matériaux"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^URTH$",
+            "renamePattern": "URTH — MSCI World (marché large)"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^BTC$",
+            "renamePattern": "BTC — Bitcoin"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^GLD$",
+            "renamePattern": "GLD — Or"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^TLT$",
+            "renamePattern": "TLT — Obligations 20 ans"
+          }
+        }
+      ],
+      "description": "Classement des actifs par corrélation avec le MSCI World. Chaque barre est libellée ticker + classe d'actif. La corrélation est une mesure de co-mouvement, pas de performance."
     },
     {
       "id": 7,
@@ -438,8 +774,8 @@
       "type": "table",
       "gridPos": {
         "h": 12,
-        "w": 8,
-        "x": 8,
+        "w": 7,
+        "x": 9,
         "y": 20
       },
       "datasource": {
@@ -467,7 +803,8 @@
           "custom": {
             "align": "center",
             "displayMode": "color-background",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none",
@@ -511,14 +848,93 @@
           "min": -1,
           "max": 1
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       "transformations": [],
       "description": "Comparateurs pertinents pour ASML et BESI : SMH, SOXX et VGT."
     },
     {
       "id": 8,
-      "title": "Bêta et R² — $stock vs $etf",
+      "title": "Bêta et R² — ${stock:text} vs ${etf:text}",
       "type": "table",
       "gridPos": {
         "h": 12,
@@ -551,12 +967,92 @@
           "custom": {
             "align": "center",
             "displayMode": "auto",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       "transformations": [],
       "description": "Bêta = pente de l'action contre l'ETF ; R² = part de variance expliquée. Une corrélation forte avec une bêta faible signifie un co-mouvement peu amplifié."
@@ -596,7 +1092,8 @@
           "custom": {
             "align": "center",
             "displayMode": "color-background",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none",
@@ -640,10 +1137,195 @@
           "min": -1,
           "max": 1
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
-      "transformations": [],
-      "description": "ASML, BESI, NOVO et SMA Solar contre les 15 actifs core. Les corrélations sont généralement plus faibles que dans la matrice ETF : les ETF SPDR sont US et ne contiennent pas nécessairement ces valeurs européennes."
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLK$",
+            "renamePattern": "XLK — Technologie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLV$",
+            "renamePattern": "XLV — Santé"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLF$",
+            "renamePattern": "XLF — Secteur financier"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLY$",
+            "renamePattern": "XLY — Conso. discrétionnaire"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLC$",
+            "renamePattern": "XLC — Services de communication"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLI$",
+            "renamePattern": "XLI — Industrie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLP$",
+            "renamePattern": "XLP — Consommation de base"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLE$",
+            "renamePattern": "XLE — Énergie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLU$",
+            "renamePattern": "XLU — Services publics"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLRE$",
+            "renamePattern": "XLRE — Immobilier"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLB$",
+            "renamePattern": "XLB — Matériaux"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^URTH$",
+            "renamePattern": "URTH — MSCI World (marché large)"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^BTC$",
+            "renamePattern": "BTC — Bitcoin"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^GLD$",
+            "renamePattern": "GLD — Or"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^TLT$",
+            "renamePattern": "TLT — Obligations 20 ans"
+          }
+        }
+      ],
+      "description": "ASML, BESI, NOVO et SMA Solar contre les 15 actifs core. Les colonnes combinent le ticker et sa classe d'actif. Les corrélations sont généralement plus faibles que dans la matrice ETF : les ETF SPDR sont US et ne contiennent pas nécessairement ces valeurs européennes."
     },
     {
       "id": 10,
@@ -716,11 +1398,118 @@
         },
         "overrides": []
       },
-      "description": "Corrélation calculée sur les N dernières observations communes avec URTH. Fenêtres 63 / 126 / 252 séances. Les fenêtres longues sont plus stables, les courtes réagissent plus vite."
+      "transformations": [
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLK$",
+            "renamePattern": "XLK — Technologie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLV$",
+            "renamePattern": "XLV — Santé"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLF$",
+            "renamePattern": "XLF — Secteur financier"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLY$",
+            "renamePattern": "XLY — Conso. discrétionnaire"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLC$",
+            "renamePattern": "XLC — Services de communication"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLI$",
+            "renamePattern": "XLI — Industrie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLP$",
+            "renamePattern": "XLP — Consommation de base"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLE$",
+            "renamePattern": "XLE — Énergie"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLU$",
+            "renamePattern": "XLU — Services publics"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLRE$",
+            "renamePattern": "XLRE — Immobilier"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^XLB$",
+            "renamePattern": "XLB — Matériaux"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^URTH$",
+            "renamePattern": "URTH — MSCI World (marché large)"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^BTC$",
+            "renamePattern": "BTC — Bitcoin"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^GLD$",
+            "renamePattern": "GLD — Or"
+          }
+        },
+        {
+          "id": "renameByRegex",
+          "options": {
+            "regex": "^TLT$",
+            "renamePattern": "TLT — Obligations 20 ans"
+          }
+        }
+      ],
+      "description": "Corrélation calculée sur les N dernières observations communes avec URTH. Fenêtres 63 / 126 / 252 séances. Les fenêtres longues sont plus stables, les courtes réagissent plus vite. Les courbes sont libellées ticker + classe d'actif."
     },
     {
       "id": 11,
-      "title": "Corrélation glissante — $stock vs $etf",
+      "title": "Corrélation glissante — ${stock:text} vs ${etf:text}",
       "type": "timeseries",
       "gridPos": {
         "h": 12,
@@ -789,6 +1578,7 @@
         },
         "overrides": []
       },
+      "transformations": [],
       "description": "Suivi dans le temps de la corrélation entre une action et un ETF. Comparer la ligne à la corrélation pleine période pour repérer un régime."
     },
     {
@@ -826,7 +1616,8 @@
           "custom": {
             "align": "center",
             "displayMode": "color-background",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none",
@@ -871,6 +1662,100 @@
           "max": 1
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 260
+              },
+              {
+                "id": "custom.wrapText",
+                "value": true
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -935,12 +1820,107 @@
           "custom": {
             "align": "center",
             "displayMode": "auto",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none"
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 260
+              },
+              {
+                "id": "custom.wrapText",
+                "value": true
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -1017,12 +1997,108 @@
           "custom": {
             "align": "center",
             "displayMode": "auto",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 200
+              },
+              {
+                "id": "custom.wrapText",
+                "value": true
+              }
+            ]
+          }
+        ]
       },
       "transformations": [],
       "description": "Clustering hiérarchique (average linkage sur 1 - corrélation), recalculé à chaque ETL sur les 3 dernières années. Les groupes changent avec la période : c'est une aide à la lecture, pas une classification officielle."
@@ -1062,12 +2138,107 @@
           "custom": {
             "align": "center",
             "displayMode": "auto",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none"
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 260
+              },
+              {
+                "id": "custom.wrapText",
+                "value": true
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -1140,7 +2311,8 @@
           "custom": {
             "align": "center",
             "displayMode": "color-background",
-            "inspect": false
+            "inspect": false,
+            "wrapHeaderText": true
           },
           "decimals": 2,
           "unit": "none",
@@ -1184,7 +2356,102 @@
           "min": -1,
           "max": 1
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|benchmark|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "XLK": {
+                        "index": 0,
+                        "text": "XLK — Technologie"
+                      },
+                      "XLV": {
+                        "index": 1,
+                        "text": "XLV — Santé"
+                      },
+                      "XLF": {
+                        "index": 2,
+                        "text": "XLF — Secteur financier"
+                      },
+                      "XLY": {
+                        "index": 3,
+                        "text": "XLY — Conso. discrétionnaire"
+                      },
+                      "XLC": {
+                        "index": 4,
+                        "text": "XLC — Services de communication"
+                      },
+                      "XLI": {
+                        "index": 5,
+                        "text": "XLI — Industrie"
+                      },
+                      "XLP": {
+                        "index": 6,
+                        "text": "XLP — Consommation de base"
+                      },
+                      "XLE": {
+                        "index": 7,
+                        "text": "XLE — Énergie"
+                      },
+                      "XLU": {
+                        "index": 8,
+                        "text": "XLU — Services publics"
+                      },
+                      "XLRE": {
+                        "index": 9,
+                        "text": "XLRE — Immobilier"
+                      },
+                      "XLB": {
+                        "index": 10,
+                        "text": "XLB — Matériaux"
+                      },
+                      "URTH": {
+                        "index": 11,
+                        "text": "URTH — MSCI World (marché large)"
+                      },
+                      "BTC": {
+                        "index": 12,
+                        "text": "BTC — Bitcoin"
+                      },
+                      "GLD": {
+                        "index": 13,
+                        "text": "GLD — Or"
+                      },
+                      "TLT": {
+                        "index": 14,
+                        "text": "TLT — Obligations 20 ans"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "^(asset|ticker)$"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 260
+              },
+              {
+                "id": "custom.wrapText",
+                "value": true
+              }
+            ]
+          }
+        ]
       },
       "transformations": [],
       "description": "Corrélation par année civile avec URTH. Permet de voir les grands régimes (COVID, resserrement 2022, rallye IA). Les années avec moins de 20 observations sont ignorées ; n_obs est affiché."
@@ -1220,9 +2487,9 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "PostgreSQL",
-          "value": "PostgreSQL"
+          "selected": true,
+          "text": "Finance-PostgreSQL",
+          "value": "finance-postgresql"
         },
         "hide": 0,
         "includeAll": false,
@@ -1230,7 +2497,7 @@
         "multi": false,
         "name": "DS_POSTGRESQL",
         "options": [],
-        "query": "postgres",
+        "query": "grafana-postgresql-datasource",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1348,7 +2615,7 @@
         "multi": false,
         "name": "stock",
         "options": [],
-        "query": "SELECT ticker FROM finance.assets WHERE universe = 'stock' ORDER BY ticker;",
+        "query": "SELECT CASE a.ticker WHEN 'XLK' THEN 'XLK — Technologie' WHEN 'XLV' THEN 'XLV — Santé' WHEN 'XLF' THEN 'XLF — Secteur financier' WHEN 'XLY' THEN 'XLY — Conso. discrétionnaire' WHEN 'XLC' THEN 'XLC — Services de communication' WHEN 'XLI' THEN 'XLI — Industrie' WHEN 'XLP' THEN 'XLP — Consommation de base' WHEN 'XLE' THEN 'XLE — Énergie' WHEN 'XLU' THEN 'XLU — Services publics' WHEN 'XLRE' THEN 'XLRE — Immobilier' WHEN 'XLB' THEN 'XLB — Matériaux' WHEN 'URTH' THEN 'URTH — MSCI World (marché large)' WHEN 'BTC' THEN 'BTC — Bitcoin' WHEN 'GLD' THEN 'GLD — Or' WHEN 'TLT' THEN 'TLT — Obligations 20 ans' ELSE a.ticker END AS __text, a.ticker AS __value FROM finance.assets a WHERE a.universe = 'stock' ORDER BY a.ticker;",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1371,7 +2638,7 @@
         "multi": false,
         "name": "etf",
         "options": [],
-        "query": "SELECT ticker FROM finance.assets WHERE asset_type = 'etf' ORDER BY universe, ticker;",
+        "query": "SELECT CASE a.ticker WHEN 'XLK' THEN 'XLK — Technologie' WHEN 'XLV' THEN 'XLV — Santé' WHEN 'XLF' THEN 'XLF — Secteur financier' WHEN 'XLY' THEN 'XLY — Conso. discrétionnaire' WHEN 'XLC' THEN 'XLC — Services de communication' WHEN 'XLI' THEN 'XLI — Industrie' WHEN 'XLP' THEN 'XLP — Consommation de base' WHEN 'XLE' THEN 'XLE — Énergie' WHEN 'XLU' THEN 'XLU — Services publics' WHEN 'XLRE' THEN 'XLRE — Immobilier' WHEN 'XLB' THEN 'XLB — Matériaux' WHEN 'URTH' THEN 'URTH — MSCI World (marché large)' WHEN 'BTC' THEN 'BTC — Bitcoin' WHEN 'GLD' THEN 'GLD — Or' WHEN 'TLT' THEN 'TLT — Obligations 20 ans' ELSE a.ticker END AS __text, a.ticker AS __value FROM finance.assets a WHERE a.asset_type = 'etf' ORDER BY a.universe, a.ticker;",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1382,11 +2649,11 @@
         "current": {
           "selected": true,
           "text": [
-            "XLK",
-            "XLE",
-            "XLU",
-            "GLD",
-            "TLT"
+            "XLK — Technologie",
+            "XLE — Énergie",
+            "XLU — Services publics",
+            "GLD — Or",
+            "TLT — Obligations 20 ans"
           ],
           "value": [
             "XLK",
@@ -1405,12 +2672,38 @@
         "label": "Actifs (courbes)",
         "multi": true,
         "name": "assets",
-        "options": [],
-        "query": "SELECT ticker FROM finance.assets WHERE universe = 'core' ORDER BY display_order;",
+        "options": [
+          {
+            "selected": true,
+            "text": "XLK — Technologie",
+            "value": "XLK"
+          },
+          {
+            "selected": true,
+            "text": "XLE — Énergie",
+            "value": "XLE"
+          },
+          {
+            "selected": true,
+            "text": "XLU — Services publics",
+            "value": "XLU"
+          },
+          {
+            "selected": true,
+            "text": "GLD — Or",
+            "value": "GLD"
+          },
+          {
+            "selected": true,
+            "text": "TLT — Obligations 20 ans",
+            "value": "TLT"
+          }
+        ],
+        "query": "SELECT CASE a.ticker WHEN 'XLK' THEN 'XLK — Technologie' WHEN 'XLV' THEN 'XLV — Santé' WHEN 'XLF' THEN 'XLF — Secteur financier' WHEN 'XLY' THEN 'XLY — Conso. discrétionnaire' WHEN 'XLC' THEN 'XLC — Services de communication' WHEN 'XLI' THEN 'XLI — Industrie' WHEN 'XLP' THEN 'XLP — Consommation de base' WHEN 'XLE' THEN 'XLE — Énergie' WHEN 'XLU' THEN 'XLU — Services publics' WHEN 'XLRE' THEN 'XLRE — Immobilier' WHEN 'XLB' THEN 'XLB — Matériaux' WHEN 'URTH' THEN 'URTH — MSCI World (marché large)' WHEN 'BTC' THEN 'BTC — Bitcoin' WHEN 'GLD' THEN 'GLD — Or' WHEN 'TLT' THEN 'TLT — Obligations 20 ans' ELSE a.ticker END AS __text, a.ticker AS __value FROM finance.assets a WHERE a.universe = 'core' ORDER BY a.display_order;",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
-        "sort": 1,
+        "sort": 0,
         "type": "query"
       }
     ]

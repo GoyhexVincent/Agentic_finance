@@ -10,12 +10,111 @@ construit à partir de briques réutilisables, puis l'écrit dans le dépôt.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "grafana" / "dashboard_finance.json"
 
 DS = {"type": "postgres", "uid": "${DS_POSTGRESQL}"}
+
+# Libellés lisibles des tickers affichés dans les matrices, les tableaux et
+# les listes déroulantes. Le ticker reste la valeur technique utilisée par
+# les requêtes SQL ; seul l'affichage est enrichi.
+ASSET_LABELS: dict[str, str] = {
+    "XLK": "Technologie",
+    "XLV": "Santé",
+    "XLF": "Secteur financier",
+    "XLY": "Conso. discrétionnaire",
+    "XLC": "Services de communication",
+    "XLI": "Industrie",
+    "XLP": "Consommation de base",
+    "XLE": "Énergie",
+    "XLU": "Services publics",
+    "XLRE": "Immobilier",
+    "XLB": "Matériaux",
+    "URTH": "MSCI World (marché large)",
+    "BTC": "Bitcoin",
+    "GLD": "Or",
+    "TLT": "Obligations 20 ans",
+}
+
+DEFAULT_ASSETS = ("XLK", "XLE", "XLU", "GLD", "TLT")
+
+
+def ticker_label(ticker: str) -> str:
+    """Retourne « TICKER — libellé », ou le ticker seul s'il n'a pas de libellé."""
+    label = ASSET_LABELS.get(ticker)
+    return f"{ticker} — {label}" if label else ticker
+
+
+def sql_literal(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+def ticker_text_sql(column: str = "a.ticker") -> str:
+    """Expression SQL qui renvoie le libellé lisible d'un ticker."""
+    whens = " ".join(
+        f"WHEN {sql_literal(ticker)} THEN {sql_literal(ticker_label(ticker))}"
+        for ticker in ASSET_LABELS
+    )
+    return f"CASE {column} {whens} ELSE {column} END"
+
+
+def ticker_value_mappings() -> list[dict]:
+    """Mappings Grafana pour afficher les tickers avec leur libellé."""
+    return [
+        {
+            "type": "value",
+            "options": {
+                ticker: {"index": index, "text": ticker_label(ticker)}
+                for index, ticker in enumerate(ASSET_LABELS)
+            },
+        }
+    ]
+
+
+def ticker_label_override() -> dict:
+    """Override de champ : transforme les valeurs asset/ticker/benchmark."""
+    return {
+        "matcher": {"id": "byRegexp", "options": "^(asset|benchmark|ticker)$"},
+        "properties": [{"id": "mappings", "value": ticker_value_mappings()}],
+    }
+
+
+def ticker_width_override(width: int) -> dict:
+    """Élargit la colonne des libellés pour éviter les noms tronqués."""
+    return {
+        "matcher": {"id": "byRegexp", "options": "^(asset|ticker)$"},
+        "properties": [
+            {"id": "custom.width", "value": width},
+            {"id": "custom.wrapText", "value": True},
+        ],
+    }
+
+
+def ticker_rename_transformations() -> list[dict]:
+    """Transformations qui renomment les colonnes XLK, XLV, etc."""
+    return [
+        {
+            "id": "renameByRegex",
+            "options": {
+                "regex": f"^{re.escape(ticker)}$",
+                "renamePattern": ticker_label(ticker),
+            },
+        }
+        for ticker in ASSET_LABELS
+    ]
+
+
+def rows_to_fields(name_field: str, value_field: str, ignored: tuple[str, ...] = ()) -> dict:
+    """Transforme une ligne par actif en un champ par actif (bar gauge)."""
+    mappings = [
+        {"fieldName": name_field, "handlerKey": "field.name"},
+        {"fieldName": value_field, "handlerKey": "field.value"},
+    ]
+    mappings.extend({"fieldName": field, "handlerKey": "__ignore"} for field in ignored)
+    return {"id": "rowsToFields", "options": {"mappings": mappings}}
 
 CORR_THRESHOLDS = {
     "mode": "absolute",
@@ -82,12 +181,15 @@ def table_panel(
     decimals: int = 2,
     overrides: list | None = None,
     sort_by: str = "asset",
+    rename_ticker_columns: bool = False,
+    label_width: int | None = None,
 ) -> dict:
     defaults = {
         "custom": {
             "align": "center",
             "displayMode": "color-background" if correlation_colors else "auto",
             "inspect": False,
+            "wrapHeaderText": True,
         },
         "decimals": decimals,
         "unit": unit,
@@ -96,6 +198,10 @@ def table_panel(
         defaults["thresholds"] = CORR_THRESHOLDS
         defaults["min"] = -1
         defaults["max"] = 1
+    panel_overrides = [ticker_label_override()]
+    if label_width is not None:
+        panel_overrides.append(ticker_width_override(label_width))
+    panel_overrides.extend(overrides or [])
     return {
         "id": panel_id,
         "title": title,
@@ -107,8 +213,8 @@ def table_panel(
             "showHeader": True,
             "sortBy": [{"displayName": sort_by, "desc": False}],
         },
-        "fieldConfig": {"defaults": defaults, "overrides": overrides or []},
-        "transformations": [],
+        "fieldConfig": {"defaults": defaults, "overrides": panel_overrides},
+        "transformations": ticker_rename_transformations() if rename_ticker_columns else [],
         "description": description,
     }
 
@@ -119,6 +225,7 @@ def timeseries_panel(
     sql: str,
     grid: dict,
     description: str = "",
+    rename_ticker_columns: bool = False,
 ) -> dict:
     return {
         "id": panel_id,
@@ -155,11 +262,19 @@ def timeseries_panel(
             },
             "overrides": [],
         },
+        "transformations": ticker_rename_transformations() if rename_ticker_columns else [],
         "description": description,
     }
 
 
-def bargauge_panel(panel_id: int, title: str, sql: str, grid: dict, description: str = "") -> dict:
+def bargauge_panel(
+    panel_id: int,
+    title: str,
+    sql: str,
+    grid: dict,
+    description: str = "",
+    transformations: list | None = None,
+) -> dict:
     return {
         "id": panel_id,
         "title": title,
@@ -188,6 +303,7 @@ def bargauge_panel(panel_id: int, title: str, sql: str, grid: dict, description:
             },
             "overrides": [],
         },
+        "transformations": transformations or [],
         "description": description,
     }
 
@@ -210,9 +326,10 @@ PANELS = [
     stat_panel(
         1,
         "Dernière séance",
-        "SELECT max(last_trade_date)::text AS \"Dernière séance\" FROM finance.v_freshness;",
+        'SELECT EXTRACT(EPOCH FROM max(last_trade_date)) * 1000 AS "Dernière séance" FROM finance.v_freshness;',
         {"h": 4, "w": 6, "x": 0, "y": 0},
         "Date du dernier cours disponible, tous actifs confondus.",
+        unit="time:YYYY-MM-DD",
     ),
     stat_panel(
         2,
@@ -225,10 +342,11 @@ PANELS = [
     stat_panel(
         3,
         "Dernier import",
-        "SELECT to_char(max(finished_at), 'YYYY-MM-DD HH24:MI') AS \"Dernier import\" "
+        "SELECT EXTRACT(EPOCH FROM max(finished_at)) * 1000 AS \"Dernier import\" "
         "FROM finance.ingestion_runs WHERE status IN ('success', 'partial');",
         {"h": 4, "w": 6, "x": 12, "y": 0},
         "Dernier run ETL terminé avec succès (ou partiellement).",
+        unit="time:YYYY-MM-DD HH:mm:ss",
     ),
     stat_panel(
         4,
@@ -246,8 +364,11 @@ PANELS = [
         "Corrélation de Pearson des rendements logarithmiques, en EUR par défaut. "
         "Chaque cellule est calculée sur les dates communes aux deux actifs ; "
         "les paires sans assez d'observations restent vides. "
-        "L'ordre des lignes/colonnes suit le clustering hiérarchique.",
+        "Les lignes et les colonnes combinent le ticker et sa classe d'actif "
+        "(ex. « XLK — Technologie »).",
         correlation_colors=True,
+        rename_ticker_columns=True,
+        label_width=300,
     ),
     bargauge_panel(
         6,
@@ -255,21 +376,24 @@ PANELS = [
         "SELECT asset, correlation, n_obs, ci_low, ci_high "
         f"FROM finance.corr_benchmark(($__timeFrom())::date, ($__timeTo())::date, '$basis', 'URTH', $min_obs) "
         "ORDER BY correlation DESC;",
-        {"h": 12, "w": 8, "x": 0, "y": 20},
+        {"h": 12, "w": 9, "x": 0, "y": 20},
         "Classement des actifs par corrélation avec le MSCI World. "
+        "Chaque barre est libellée ticker + classe d'actif. "
         "La corrélation est une mesure de co-mouvement, pas de performance.",
+        transformations=[rows_to_fields("asset", "correlation", ("n_obs", "ci_low", "ci_high"))]
+        + ticker_rename_transformations(),
     ),
     table_panel(
         7,
         "Matrice 3 × 3 — ETF tech/semi",
         f"SELECT * FROM finance.corr_matrix_tech({MATRIX_ARGS});",
-        {"h": 12, "w": 8, "x": 8, "y": 20},
+        {"h": 12, "w": 7, "x": 9, "y": 20},
         "Comparateurs pertinents pour ASML et BESI : SMH, SOXX et VGT.",
         correlation_colors=True,
     ),
     table_panel(
         8,
-        "Bêta et R² — $stock vs $etf",
+        "Bêta et R² — ${stock:text} vs ${etf:text}",
         "SELECT asset, benchmark, beta, r2, correlation, n_obs "
         "FROM finance.beta_vs_benchmark('$stock', '$etf', "
         "($__timeFrom())::date, ($__timeTo())::date, '$basis');",
@@ -283,9 +407,11 @@ PANELS = [
         f"SELECT * FROM finance.corr_matrix_stocks({MATRIX_ARGS});",
         {"h": 9, "w": 24, "x": 0, "y": 32},
         "ASML, BESI, NOVO et SMA Solar contre les 15 actifs core. "
+        "Les colonnes combinent le ticker et sa classe d'actif. "
         "Les corrélations sont généralement plus faibles que dans la matrice ETF : "
         "les ETF SPDR sont US et ne contiennent pas nécessairement ces valeurs européennes.",
         correlation_colors=True,
+        rename_ticker_columns=True,
     ),
     timeseries_panel(
         10,
@@ -297,11 +423,12 @@ PANELS = [
         {"h": 12, "w": 14, "x": 0, "y": 41},
         "Corrélation calculée sur les N dernières observations communes avec URTH. "
         "Fenêtres 63 / 126 / 252 séances. Les fenêtres longues sont plus stables, "
-        "les courtes réagissent plus vite.",
+        "les courtes réagissent plus vite. Les courbes sont libellées ticker + classe d'actif.",
+        rename_ticker_columns=True,
     ),
     timeseries_panel(
         11,
-        "Corrélation glissante — $stock vs $etf",
+        "Corrélation glissante — ${stock:text} vs ${etf:text}",
         "SELECT trade_date::timestamptz AS time, correlation AS value "
         "FROM finance.rolling_corr('$stock', '$etf', $window, "
         "($__timeFrom())::date, ($__timeTo())::date, '$basis') ORDER BY trade_date;",
@@ -321,6 +448,7 @@ PANELS = [
         "sur toute la période. Les corrélations montent souvent dans les baisses : "
         "un actif diversifiant en temps normal peut ne plus l'être en stress.",
         correlation_colors=True,
+        label_width=260,
         overrides=[
             {
                 "matcher": {"id": "byName", "options": "n_stress"},
@@ -341,6 +469,7 @@ PANELS = [
         "Volatilité annualisée, rendement cumulé et drawdown maximal, calculés en EUR "
         "sur tout l'historique disponible (pas seulement la fenêtre Grafana).",
         sort_by="ticker",
+        label_width=260,
         overrides=[
             {
                 "matcher": {"id": "byName", "options": "annualized_vol"},
@@ -366,6 +495,7 @@ PANELS = [
         "à chaque ETL sur les 3 dernières années. Les groupes changent avec la période : "
         "c'est une aide à la lecture, pas une classification officielle.",
         sort_by="ticker",
+        label_width=200,
     ),
     table_panel(
         14,
@@ -376,6 +506,7 @@ PANELS = [
         "Contrôle opérationnel : âge de la dernière séance et du dernier import. "
         "Un actif européen peut avoir un jour de retard sur URTH selon les fériés.",
         sort_by="ticker",
+        label_width=260,
         overrides=[
             {
                 "matcher": {"id": "byName", "options": "days_since_last_trade"},
@@ -408,6 +539,7 @@ PANELS = [
         "sont ignorées ; n_obs est affiché.",
         correlation_colors=True,
         sort_by="year",
+        label_width=260,
     ),
     text_panel(
         15,
@@ -469,14 +601,18 @@ Ils ne sont pas une classification officielle : c'est une aide à la lecture.
 
 VARIABLES = [
     {
-        "current": {"selected": False, "text": "PostgreSQL", "value": "PostgreSQL"},
+        "current": {
+            "selected": True,
+            "text": "Finance-PostgreSQL",
+            "value": "finance-postgresql",
+        },
         "hide": 0,
         "includeAll": False,
         "label": "Datasource",
         "multi": False,
         "name": "DS_POSTGRESQL",
         "options": [],
-        "query": "postgres",
+        "query": "grafana-postgresql-datasource",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": False,
@@ -539,7 +675,8 @@ VARIABLES = [
         "multi": False,
         "name": "stock",
         "options": [],
-        "query": "SELECT ticker FROM finance.assets WHERE universe = 'stock' ORDER BY ticker;",
+        "query": f"SELECT {ticker_text_sql('a.ticker')} AS __text, a.ticker AS __value "
+        "FROM finance.assets a WHERE a.universe = 'stock' ORDER BY a.ticker;",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": False,
@@ -555,7 +692,9 @@ VARIABLES = [
         "multi": False,
         "name": "etf",
         "options": [],
-        "query": "SELECT ticker FROM finance.assets WHERE asset_type = 'etf' ORDER BY universe, ticker;",
+        "query": f"SELECT {ticker_text_sql('a.ticker')} AS __text, a.ticker AS __value "
+        "FROM finance.assets a WHERE a.asset_type = 'etf' "
+        "ORDER BY a.universe, a.ticker;",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": False,
@@ -565,8 +704,8 @@ VARIABLES = [
     {
         "current": {
             "selected": True,
-            "text": ["XLK", "XLE", "XLU", "GLD", "TLT"],
-            "value": ["XLK", "XLE", "XLU", "GLD", "TLT"],
+            "text": [ticker_label(ticker) for ticker in DEFAULT_ASSETS],
+            "value": list(DEFAULT_ASSETS),
         },
         "datasource": DS,
         "hide": 0,
@@ -574,12 +713,16 @@ VARIABLES = [
         "label": "Actifs (courbes)",
         "multi": True,
         "name": "assets",
-        "options": [],
-        "query": "SELECT ticker FROM finance.assets WHERE universe = 'core' ORDER BY display_order;",
+        "options": [
+            {"selected": True, "text": ticker_label(ticker), "value": ticker}
+            for ticker in DEFAULT_ASSETS
+        ],
+        "query": f"SELECT {ticker_text_sql('a.ticker')} AS __text, a.ticker AS __value "
+        "FROM finance.assets a WHERE a.universe = 'core' ORDER BY a.display_order;",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": False,
-        "sort": 1,
+        "sort": 0,
         "type": "query",
     },
 ]
@@ -618,7 +761,8 @@ ANNOTATIONS = {
                 "format": "table",
                 "rawQuery": True,
                 "rawSql": "SELECT b.break_date::timestamptz AS time, "
-                "a.ticker || ' — rupture ' || b.method AS text, 'break' AS tags "
+                f"{ticker_text_sql('a.ticker')} || ' — rupture ' || b.method AS text, "
+                "'break' AS tags "
                 "FROM finance.correlation_breaks b "
                 "JOIN finance.assets a USING (asset_id) "
                 "WHERE $__timeFilter(b.break_date) ORDER BY b.break_date;",

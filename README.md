@@ -220,6 +220,24 @@ python -m finance_tracker.etl
 
 Voir [`docs/RUNBOOK.md`](docs/RUNBOOK.md) pour le détail.
 
+#### 6. Grafana
+
+Créer le rôle de lecture, puis installer la datasource et le dashboard
+provisionnés :
+
+```bash
+bash scripts/bootstrap_grafana.sh finance_db
+
+sudo install -m 640 -o root -g grafana \
+  grafana/finance.env.example /etc/grafana/finance.env
+sudo editor /etc/grafana/finance.env   # GF_PG_PASSWORD, GF_PG_DATABASE…
+
+sudo bash scripts/install_grafana_provisioning.sh
+```
+
+Le dashboard est disponible sur `/d/finance-correlation`, sans import manuel.
+Détails et dépannage : [`grafana/grafana_setup.md`](grafana/grafana_setup.md).
+
 ---
 
 ### Structure du dépôt
@@ -235,7 +253,8 @@ Finance_tracker/
 ├── .env.example
 ├── sql/
 │   ├── 00_bootstrap.sql            # rôle, base, schéma, droits (superuser)
-│   └── 10_schema.sql               # tables, vues, fonctions, événements
+│   ├── 10_schema.sql               # tables, vues, fonctions, événements
+│   └── 20_grafana_readonly.sql     # rôle grafana en lecture seule
 ├── finance_tracker/
 │   ├── config.py                   # variables d'environnement
 │   ├── assets.py                   # référentiel des 22 actifs
@@ -246,6 +265,9 @@ Finance_tracker/
 ├── scripts/
 │   ├── create_database.sh          # création idempotente de finance_db
 │   ├── bootstrap_finance_db.sh     # rôle + schéma + droits, en une commande
+│   ├── bootstrap_grafana.sh        # rôle PostgreSQL grafana (lecture seule)
+│   ├── install_grafana_provisioning.sh
+│   ├── run_grafana_local.sh        # instance de test sans root
 │   ├── verify_freshness.py
 │   └── build_dashboard.py
 ├── tests/
@@ -255,6 +277,10 @@ Finance_tracker/
 │   └── test_schema_contract.py
 ├── grafana/
 │   ├── dashboard_finance.json
+│   ├── finance.env.example
+│   ├── provisioning/
+│   │   ├── datasources/finance-postgres.yaml
+│   │   └── dashboards/finance.yaml
 │   ├── grafana_setup.md
 │   └── ALERTES.md
 └── docs/

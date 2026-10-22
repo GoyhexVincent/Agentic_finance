@@ -1,0 +1,39 @@
+# Datasource PostgreSQL du Finance Tracker.
+#
+# Provisionnée au démarrage de Grafana : aucune saisie manuelle dans l'UI,
+# donc aucune dérive entre la machine de dev et le Raspberry Pi.
+#
+# Les valeurs viennent de l'environnement du service Grafana
+# (/etc/grafana/finance.env, voir grafana/finance.env.example) :
+#   GF_PG_HOST, GF_PG_PORT, GF_PG_DATABASE, GF_PG_USER, GF_PG_PASSWORD
+#
+# Le rôle doit être en lecture seule (sql/20_grafana_readonly.sql).
+
+apiVersion: 1
+
+datasources:
+  - name: Finance-PostgreSQL
+    uid: finance-postgresql
+    type: postgres
+    access: proxy
+    url: "${GF_PG_HOST}:${GF_PG_PORT}"
+    database: "${GF_PG_DATABASE}"
+    user: "${GF_PG_USER}"
+    isDefault: false
+    editable: false
+    # Grafana ne relit un datasource provisionné que si ce numéro augmente.
+    # À incrémenter après tout changement de mot de passe, d'hôte ou de base,
+    # puis redémarrer Grafana.
+    version: 2
+    secureJsonData:
+      password: "${GF_PG_PASSWORD}"
+    jsonData:
+      # Grafana 12 lit la base par défaut ici pour l'éditeur de requêtes ;
+      # le champ racine `database` reste nécessaire au backend.
+      database: "${GF_PG_DATABASE}"
+      sslmode: "disable"
+      postgresVersion: 1700
+      timescaledb: false
+      maxOpenConns: 10
+      maxIdleConns: 2
+      connMaxLifetime: 14400

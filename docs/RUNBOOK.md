@@ -148,6 +148,21 @@ un Pi. Le backfill peut être relancé avec `--force` pour ignorer le garde-fou.
 5. Vérifier que le cron est bien `H 6 * * *` et que Jenkins est en
    `Europe/Paris`.
 
+### 3.7 Grafana
+
+Une fois les données chargées, créer le rôle de lecture puis installer le
+provisioning :
+
+```bash
+bash scripts/bootstrap_grafana.sh finance_db
+sudo install -m 640 -o root -g grafana \
+  grafana/finance.env.example /etc/grafana/finance.env
+sudo editor /etc/grafana/finance.env
+sudo bash scripts/install_grafana_provisioning.sh
+```
+
+Voir §5 et [`grafana/grafana_setup.md`](../grafana/grafana_setup.md).
+
 ---
 
 ## 4. Commandes utiles
@@ -177,22 +192,37 @@ python scripts/build_dashboard.py
 
 ---
 
-## 5. Importer le dashboard Grafana
+## 5. Déployer Grafana
 
-1. **Administration → Data sources → PostgreSQL**.
-   - Host : `localhost:5432`
-   - Database : `finance_db`
-   - User : `grafana`
-   - SSL : `disable` (local)
-   - TimescaleDB : **non** (PostgreSQL standard)
-2. **+ → Import → Upload JSON** : `grafana/dashboard_finance.json`.
-3. Sélectionner la datasource `DS_POSTGRESQL`.
-4. Vérifier que les variables `basis`, `window`, `stock`, `etf` se peuplent.
-5. Le dashboard s'ouvre sur `2018-07-01 → now`. Utiliser le sélecteur de temps
-   pour revenir à 2015 ou zoomer sur 2022.
+Le détail est dans [`grafana/grafana_setup.md`](../grafana/grafana_setup.md).
+Résumé pour le Pi :
+
+```bash
+# 1. Rôle PostgreSQL en lecture seule (demande le mot de passe)
+bash scripts/bootstrap_grafana.sh finance_db
+
+# 2. Variables du service Grafana
+sudo install -m 640 -o root -g grafana \
+  grafana/finance.env.example /etc/grafana/finance.env
+sudo editor /etc/grafana/finance.env   # GF_PG_PASSWORD, GF_PG_DATABASE…
+
+# 3. Datasource + dashboard provisionnés
+sudo bash scripts/install_grafana_provisioning.sh
+```
+
+La datasource `Finance-PostgreSQL` (uid `finance-postgresql`) et le dashboard
+sont alors créés automatiquement. Vérifier :
+
+```bash
+curl -u admin:... \
+  http://127.0.0.1:3000/api/datasources/uid/finance-postgresql/health
+# {"message":"Database Connection OK","status":"OK"}
+```
+
+Puis ouvrir <http://127.0.0.1:3000/d/finance-correlation>.
 
 Si les variables `stock`/`etf` sont vides, le schéma n'est pas encore chargé ou
-la datasource n'a pas les droits :
+le rôle n'a pas les droits :
 
 ```sql
 GRANT USAGE ON SCHEMA finance TO grafana;
@@ -201,7 +231,12 @@ ALTER DEFAULT PRIVILEGES FOR ROLE finance IN SCHEMA finance
   GRANT SELECT ON TABLES TO grafana;
 ```
 
-Recharger ensuite la datasource dans Grafana (**Save & test**).
+Rejouer `sql/20_grafana_readonly.sql` est plus sûr : il pose aussi
+`EXECUTE` sur les fonctions et révoque les droits d'écriture.
+
+> Après un changement de mot de passe, incrémenter `version` dans
+> `grafana/provisioning/datasources/finance-postgres.yaml` : Grafana ne
+> réapplique un datasource provisionné que si ce numéro augmente.
 
 ---
 
@@ -263,6 +298,28 @@ ALTER DEFAULT PRIVILEGES FOR ROLE finance IN SCHEMA finance
 
 En local, utiliser le socket (`PGHOST=/var/run/postgresql`) ou un `.pgpass`.
 En production, vérifier `PGPASSWORD` / le credential Jenkins.
+
+### Grafana garde l'ancien hôte ou l'ancien mot de passe
+
+Un datasource provisionné n'est réappliqué que si son champ `version` augmente.
+Incrémenter `version` dans
+`grafana/provisioning/datasources/finance-postgres.yaml`, relancer
+`scripts/install_grafana_provisioning.sh`, puis redémarrer Grafana.
+
+### `dial unix .../.s.PGSQL.5432: no such file or directory`
+
+Grafana construit une URL `hôte:port` : un chemin de socket Unix
+(`/var/run/postgresql`) est pris pour un hôte littéral. Utiliser TCP
+(`GF_PG_HOST=localhost`) et un rôle avec mot de passe.
+
+### Le dashboard n'apparaît pas dans Grafana
+
+Vérifier que `GF_FINANCE_DASHBOARDS_PATH` pointe vers le dossier contenant
+`dashboard_finance.json`, puis :
+
+```bash
+journalctl -u grafana-server -n 50 --no-pager | grep -i provision
+```
 
 ### `Symbole introuvable sur Yahoo (404)`
 
